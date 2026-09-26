@@ -1,5 +1,7 @@
 # Animal Tracker
 
+**[Project website](https://johnm555.github.io/AnimalTracker/)** · [Setup guide](docs/Setup_Guide.md) · [Open issues](https://github.com/johnm555/AnimalTracker/issues)
+
 Where is your animal right now? Animal Tracker answers that from your Ring
 cameras, a Mac that stays on, and an Apple Watch — and it only ever reports what
 a camera has actually seen.
