@@ -1,7 +1,7 @@
 # Notification Payload Contract
 
 Produced by `backend/src/notification.py::build_payload()`. Consumed by the
-watchOS app (`ios/WinstonWatch/Sources/WinstonCore/NotificationPayload.swift`)
+watchOS app (`ios/AnimalTrackerWatch/Sources/AnimalTrackerCore/NotificationPayload.swift`)
 and mirrored, minus `aps`, by Pushover. **Change both sides together.**
 
 ## Shape
@@ -9,7 +9,7 @@ and mirrored, minus `aps`, by Pushover. **Change both sides together.**
 ```json
 {
   "aps": {
-    "alert": { "title": "Winston is in the driveway", "body": "Moved from the side yard to the driveway. Street-adjacent." },
+    "alert": { "title": "Max is in the driveway", "body": "Moved from the side yard to the driveway. Street-adjacent." },
     "sound": "default",
     "interruption-level": "time-sensitive",
     "relevance-score": 1.0,
@@ -39,7 +39,7 @@ and mirrored, minus `aps`, by Pushover. **Change both sides together.**
 
 `category` is always `WINSTON_MOVED` (register a `UNNotificationCategory` with
 that id for actions like "Show map" / "Mute 1h"). `thread-id` groups every
-Winston alert into one stack. APNs headers: `apns-push-type` alert/background,
+tracker alert into one stack. APNs headers: `apns-push-type` alert/background,
 `apns-priority` 10/5, `apns-collapse-id: winston-location`.
 
 ### `winston` (ours)

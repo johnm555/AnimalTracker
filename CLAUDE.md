@@ -35,7 +35,7 @@ backend/
   src/ring_client.py          ring_doorbell wrapper
   src/frame_extractor.py      MP4 → JPEG frames
   tests/                      pytest; no network, no credentials needed
-ios/WinstonWatch/             Swift: WinstonCore (models, API client), watchOS app, WidgetKit
+ios/AnimalTrackerWatch/             Swift: AnimalTrackerCore (models, API client), watchOS app, WidgetKit
 scripts/run.sh                unified entry point for all commands
 docs/                         design decisions, dependency policy, research
 ```
@@ -44,8 +44,12 @@ docs/                         design decisions, dependency policy, research
 
 ```bash
 scripts/setup.sh                       # venv + deps + tests
+scripts/run.sh setup [--answers f]     # configure a property (writes the data dir; validates topology)
+scripts/run.sh doctor [--json]         # installation health check with fixes — run first when anything is off
+scripts/run.sh train status            # local-model training state + next steps (also harvest|evaluate|calibrate|eval-set|export|full)
+scripts/review_session.sh [claude|codex]   # one headless review session; install-launchd.sh review schedules it
 scripts/run.sh test                    # pytest
-scripts/run.sh watch-test              # Swift Testing for WinstonCore
+scripts/run.sh watch-test              # Swift Testing for AnimalTrackerCore
 scripts/run.sh api                     # API + Ring poller (the whole system)
 scripts/run.sh ring-login              # one-time Ring 2FA
 scripts/run.sh detect list --sheets    # session-mode: pending review queue
@@ -57,6 +61,13 @@ scripts/run.sh calibrate-local         # recalibrate DINOv2 thresholds
 scripts/run.sh findmy-login            # iCloud auth for AirTag polling
 scripts/run.sh findmy-test             # verify AirTag location fetch
 ```
+
+## Skills
+
+`.claude/skills/` — use these instead of improvising: `setup-property`,
+`configure-notifications`, `review-frames` (session verdicts + audits),
+`train-local-models`, `troubleshoot`. Each drives `scripts/run.sh` commands;
+keep logic in the scripts, not the skills.
 
 ## Site data vs framework code
 

@@ -17,6 +17,23 @@ answer is `unknown` — never a guess.
 3. Site data lives in `~/Library/Application Support/AnimalTracker/`, not in
    the repo. Read the configs there before changing code that depends on them.
 
+## Task playbooks
+
+Step-by-step playbooks live in `.claude/skills/*/SKILL.md`. Claude Code loads
+them automatically; other agents (Codex etc.) should read the matching file
+before starting:
+
+| Task | Playbook |
+|---|---|
+| Configure a property (cameras, zones, travel windows, priorities) | `.claude/skills/setup-property/SKILL.md` |
+| Notifications, quiet hours, muting | `.claude/skills/configure-notifications/SKILL.md` |
+| Review queued frames, audit local decisions | `.claude/skills/review-frames/SKILL.md` |
+| Improve the local models | `.claude/skills/train-local-models/SKILL.md` |
+| Something's broken | `.claude/skills/troubleshoot/SKILL.md` — always start with `scripts/run.sh doctor` |
+
+Unattended review with either subscription: `scripts/review_session.sh claude|codex`
+(scheduled by `scripts/install-launchd.sh review claude|codex`).
+
 ## How AI sessions train the local models
 
 The system is designed so your existing AI subscription (Claude Pro, Codex,
@@ -66,8 +83,10 @@ scripts/run.sh detect audit-summary     # agreement rate
 scripts/run.sh animals candidates       # non-target animals awaiting species
 
 # 4. (Periodically) Improve the local models
-scripts/build_reference_set.py harvest  # grow the gallery from new verdicts
-scripts/run.sh calibrate-local          # re-fit thresholds
+scripts/run.sh train status             # what to do next
+scripts/run.sh train harvest            # plan a gallery from new verdicts (--apply after train evaluate)
+scripts/run.sh train calibrate          # threshold bands (printed, never written)
+scripts/run.sh train export             # labelled class folders for Create ML / fine-tuning
 ```
 
 ### Rules for session agents

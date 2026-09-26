@@ -1,0 +1,512 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01CDA63DFF66C61BFD5DE652 /* AnimalTrackerComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69AE3E2B2E304F0E0DF0CA2C /* AnimalTrackerComplication.swift */; };
+		02BE0AAE5567CAD3225D6D8D /* AnimalTrackerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 62ECF7A987D49B8704E20F1D /* AnimalTrackerCore */; };
+		0FA70771A45609961C0FD7B9 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A22CBD31FF17E17000A909 /* StatsView.swift */; };
+		169D34D6262647C9E83CE0A6 /* StatePill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F4220E36AE0B17A2E1E1F1 /* StatePill.swift */; };
+		2D737BEA164FE3504B97A40C /* AnimalTrackerWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D3372326CDE526AD9AFE3FF /* AnimalTrackerWatchApp.swift */; };
+		3A45481DD42BF10E591F0F3D /* LocationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E154A3580DB8E83BD8AEA62 /* LocationStore.swift */; };
+		44AA49BE317BE29C5B9542C8 /* CheckOnAnimalIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43633E066E11C95AD3C488C9 /* CheckOnAnimalIntent.swift */; };
+		52598AC30D6775E7D7333BA3 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 269B3B6AA5762E290B4D187F /* NotificationView.swift */; };
+		5A7900BABB29B7EBB453ECA8 /* AnimalTrackerComplicationBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C41099464F0B94C32A0905 /* AnimalTrackerComplicationBundle.swift */; };
+		6425D3DA4AD60CF90228FF1D /* ComplicationViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11A1C75D60BE817FAC245636 /* ComplicationViews.swift */; };
+		75E96079A21F6CAED901E667 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174FE51C7FE31DACA332CCE6 /* HistoryView.swift */; };
+		8F696977B7AA2F6DF7DAAD76 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6E61086113C73BCB184D90 /* SettingsView.swift */; };
+		913141D1FA0A9F4166705EFE /* NotificationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D54825D057C85A3C5B444E /* NotificationController.swift */; };
+		AB17297A9566019A99D90894 /* LocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23709D61EAE1FC251F21102C /* LocationView.swift */; };
+		ECEEFBA1DF05E4210FE02E2A /* AnimalTrackerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 184A58CD3D35D40A21E45BCB /* AnimalTrackerCore */; };
+		F33B0F2C21A227945B25860F /* ConfidenceBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 276D450267F5E55BD5A85A19 /* ConfidenceBar.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0D32302089B50C67FDACAD6E /* AnimalTrackerWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnimalTrackerWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		11A1C75D60BE817FAC245636 /* ComplicationViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationViews.swift; sourceTree = "<group>"; };
+		11A22CBD31FF17E17000A909 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		174FE51C7FE31DACA332CCE6 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		23709D61EAE1FC251F21102C /* LocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationView.swift; sourceTree = "<group>"; };
+		269B3B6AA5762E290B4D187F /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
+		276D450267F5E55BD5A85A19 /* ConfidenceBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceBar.swift; sourceTree = "<group>"; };
+		39D54825D057C85A3C5B444E /* NotificationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationController.swift; sourceTree = "<group>"; };
+		3E154A3580DB8E83BD8AEA62 /* LocationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationStore.swift; sourceTree = "<group>"; };
+		3F6E61086113C73BCB184D90 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		43633E066E11C95AD3C488C9 /* CheckOnAnimalIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckOnAnimalIntent.swift; sourceTree = "<group>"; };
+		613621AFF212A2A3D344F2E5 /* AnimalTrackerWatch */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnimalTrackerWatch; path = .; sourceTree = SOURCE_ROOT; };
+		69AE3E2B2E304F0E0DF0CA2C /* AnimalTrackerComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalTrackerComplication.swift; sourceTree = "<group>"; };
+		87F4220E36AE0B17A2E1E1F1 /* StatePill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatePill.swift; sourceTree = "<group>"; };
+		9D3372326CDE526AD9AFE3FF /* AnimalTrackerWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalTrackerWatchApp.swift; sourceTree = "<group>"; };
+		B3C41099464F0B94C32A0905 /* AnimalTrackerComplicationBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimalTrackerComplicationBundle.swift; sourceTree = "<group>"; };
+		B3FC09F1956DD8F05D9E93A1 /* AnimalTrackerComplication.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnimalTrackerComplication.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		365851C1883ACC9265ED5E07 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECEEFBA1DF05E4210FE02E2A /* AnimalTrackerCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AD6E1C73FA0FBEDFA55E3885 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				02BE0AAE5567CAD3225D6D8D /* AnimalTrackerCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0DEFF4057D7C84E1C327C3C4 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				613621AFF212A2A3D344F2E5 /* AnimalTrackerWatch */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		1B66DE855803E16A5460285B = {
+			isa = PBXGroup;
+			children = (
+				67D2142B4E5CC0BBA619F9F0 /* App */,
+				EE80599ABFA9C8694318C37E /* Complication */,
+				0DEFF4057D7C84E1C327C3C4 /* Packages */,
+				3D064B3C9334B163FC58E2C7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3D064B3C9334B163FC58E2C7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B3FC09F1956DD8F05D9E93A1 /* AnimalTrackerComplication.appex */,
+				0D32302089B50C67FDACAD6E /* AnimalTrackerWatch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		67D2142B4E5CC0BBA619F9F0 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				9D3372326CDE526AD9AFE3FF /* AnimalTrackerWatchApp.swift */,
+				3E154A3580DB8E83BD8AEA62 /* LocationStore.swift */,
+				B61D071B935B22B955389738 /* Intents */,
+				7540F6DF21C7B78639767CAC /* Notifications */,
+				F7EA77DF61B8C9E582F182FF /* Views */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		7540F6DF21C7B78639767CAC /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				39D54825D057C85A3C5B444E /* NotificationController.swift */,
+				269B3B6AA5762E290B4D187F /* NotificationView.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
+		B61D071B935B22B955389738 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				43633E066E11C95AD3C488C9 /* CheckOnAnimalIntent.swift */,
+			);
+			path = Intents;
+			sourceTree = "<group>";
+		};
+		EE80599ABFA9C8694318C37E /* Complication */ = {
+			isa = PBXGroup;
+			children = (
+				69AE3E2B2E304F0E0DF0CA2C /* AnimalTrackerComplication.swift */,
+				B3C41099464F0B94C32A0905 /* AnimalTrackerComplicationBundle.swift */,
+				11A1C75D60BE817FAC245636 /* ComplicationViews.swift */,
+			);
+			path = Complication;
+			sourceTree = "<group>";
+		};
+		F7EA77DF61B8C9E582F182FF /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				276D450267F5E55BD5A85A19 /* ConfidenceBar.swift */,
+				174FE51C7FE31DACA332CCE6 /* HistoryView.swift */,
+				23709D61EAE1FC251F21102C /* LocationView.swift */,
+				3F6E61086113C73BCB184D90 /* SettingsView.swift */,
+				87F4220E36AE0B17A2E1E1F1 /* StatePill.swift */,
+				11A22CBD31FF17E17000A909 /* StatsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		09AC888F9968D9D8532A8921 /* AnimalTrackerWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A5C2054D125ED9631A1ADF2C /* Build configuration list for PBXNativeTarget "AnimalTrackerWatch" */;
+			buildPhases = (
+				3A8337FA1D59F781B554A90A /* Sources */,
+				365851C1883ACC9265ED5E07 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnimalTrackerWatch;
+			packageProductDependencies = (
+				184A58CD3D35D40A21E45BCB /* AnimalTrackerCore */,
+			);
+			productName = AnimalTrackerWatch;
+			productReference = 0D32302089B50C67FDACAD6E /* AnimalTrackerWatch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4104DFF7BB84EAB531D75A2D /* AnimalTrackerComplication */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D854158A7DE82EE4D416864B /* Build configuration list for PBXNativeTarget "AnimalTrackerComplication" */;
+			buildPhases = (
+				36F52A6563FB78E5288E39B8 /* Sources */,
+				AD6E1C73FA0FBEDFA55E3885 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnimalTrackerComplication;
+			packageProductDependencies = (
+				62ECF7A987D49B8704E20F1D /* AnimalTrackerCore */,
+			);
+			productName = AnimalTrackerComplication;
+			productReference = B3FC09F1956DD8F05D9E93A1 /* AnimalTrackerComplication.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7927B861C2FEF8DBB7170585 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					09AC888F9968D9D8532A8921 = {
+						DevelopmentTeam = KBGYVG6F36;
+						ProvisioningStyle = Automatic;
+					};
+					4104DFF7BB84EAB531D75A2D = {
+						DevelopmentTeam = KBGYVG6F36;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 8BB1D24C3C0C65E0AED1A42C /* Build configuration list for PBXProject "AnimalTrackerWatch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1B66DE855803E16A5460285B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				29F4DECEF668F78D671E92FA /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3D064B3C9334B163FC58E2C7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4104DFF7BB84EAB531D75A2D /* AnimalTrackerComplication */,
+				09AC888F9968D9D8532A8921 /* AnimalTrackerWatch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		36F52A6563FB78E5288E39B8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				01CDA63DFF66C61BFD5DE652 /* AnimalTrackerComplication.swift in Sources */,
+				5A7900BABB29B7EBB453ECA8 /* AnimalTrackerComplicationBundle.swift in Sources */,
+				6425D3DA4AD60CF90228FF1D /* ComplicationViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3A8337FA1D59F781B554A90A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D737BEA164FE3504B97A40C /* AnimalTrackerWatchApp.swift in Sources */,
+				44AA49BE317BE29C5B9542C8 /* CheckOnAnimalIntent.swift in Sources */,
+				F33B0F2C21A227945B25860F /* ConfidenceBar.swift in Sources */,
+				75E96079A21F6CAED901E667 /* HistoryView.swift in Sources */,
+				3A45481DD42BF10E591F0F3D /* LocationStore.swift in Sources */,
+				AB17297A9566019A99D90894 /* LocationView.swift in Sources */,
+				913141D1FA0A9F4166705EFE /* NotificationController.swift in Sources */,
+				52598AC30D6775E7D7333BA3 /* NotificationView.swift in Sources */,
+				8F696977B7AA2F6DF7DAAD76 /* SettingsView.swift in Sources */,
+				169D34D6262647C9E83CE0A6 /* StatePill.swift in Sources */,
+				0FA70771A45609961C0FD7B9 /* StatsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		242355EAB849C21F9E05F1F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Complication.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Complication-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnmarshall.winston-watchdog.complication";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		8EA825BDEA7103FDF3258524 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Watch.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Watch-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Animal Tracker";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your Animal Tracker backend.";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnmarshall.winston-watchdog";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		98ABAF123D91080367F006EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = KBGYVG6F36;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		C776476E194985E443173344 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Watch.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Watch-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Animal Tracker";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "Connect to your Animal Tracker backend.";
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnmarshall.winston-watchdog";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		E6661A6F9B4834BA72B672B8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Complication.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Complication-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.johnmarshall.winston-watchdog.complication";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		F8FAD68C4BC1A92D22D0C70B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = KBGYVG6F36;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8BB1D24C3C0C65E0AED1A42C /* Build configuration list for PBXProject "AnimalTrackerWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F8FAD68C4BC1A92D22D0C70B /* Debug */,
+				98ABAF123D91080367F006EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A5C2054D125ED9631A1ADF2C /* Build configuration list for PBXNativeTarget "AnimalTrackerWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8EA825BDEA7103FDF3258524 /* Debug */,
+				C776476E194985E443173344 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D854158A7DE82EE4D416864B /* Build configuration list for PBXNativeTarget "AnimalTrackerComplication" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E6661A6F9B4834BA72B672B8 /* Debug */,
+				242355EAB849C21F9E05F1F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		29F4DECEF668F78D671E92FA /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		184A58CD3D35D40A21E45BCB /* AnimalTrackerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnimalTrackerCore;
+		};
+		62ECF7A987D49B8704E20F1D /* AnimalTrackerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnimalTrackerCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 7927B861C2FEF8DBB7170585 /* Project object */;
+}

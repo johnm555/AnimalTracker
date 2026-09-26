@@ -102,8 +102,8 @@ def _load_env() -> None:
 
 
 def db_path(settings: dict[str, Any]) -> Path:
-    path = Path((settings.get("database") or {}).get("path", "./winston.db"))
-    return path if path.is_absolute() else BACKEND / path
+    from src.paths import db_path as _db_path
+    return Path(_db_path(settings))
 
 
 class Recorder:

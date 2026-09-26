@@ -69,7 +69,7 @@ def db_path(settings: dict | None = None) -> str:
 
 def reference_images_dir(settings: dict | None = None) -> Path:
     if settings:
-        rel = settings.get("detector", {}).get("reference_images")
+        rel = (settings.get("detector") or {}).get("reference_images_dir")
         if rel:
             p = Path(rel)
             return p if p.is_absolute() else data_dir() / p

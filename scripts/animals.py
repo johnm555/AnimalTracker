@@ -29,8 +29,8 @@ from src.observation import parse_timestamp, utcnow  # noqa: E402
 
 
 def open_db(settings) -> Database:
-    p = Path((settings.get("database") or {}).get("path", "./winston.db"))
-    return Database(p if p.is_absolute() else BACKEND / p)
+    from src.paths import db_path
+    return Database(db_path(settings))
 
 
 def cmd_report(args, settings) -> int:

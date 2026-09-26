@@ -6,6 +6,8 @@
 #   scripts/install-launchd.sh status
 #   scripts/install-launchd.sh cleanup    install the daily 03:00 retention job (run.sh cleanup --apply)
 #   scripts/install-launchd.sh uninstall-cleanup
+#   scripts/install-launchd.sh review [claude|codex]   every 30 min: an AI session drains the review queue
+#   scripts/install-launchd.sh uninstall-review
 #
 # Runs `scripts/run.sh api` (API server + in-process Ring poller). Logs go to
 # ~/Library/Logs/WinstonTracker/. The cleanup job is a second, independent
@@ -20,6 +22,8 @@ LABEL="com.winstontracker.api"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 CLEAN_LABEL="com.winstontracker.cleanup"
 CLEAN_PLIST="$HOME/Library/LaunchAgents/$CLEAN_LABEL.plist"
+REVIEW_LABEL="com.winstontracker.review"
+REVIEW_PLIST="$HOME/Library/LaunchAgents/$REVIEW_LABEL.plist"
 LOG_DIR="$HOME/Library/Logs/WinstonTracker"
 UID_NUM="$(id -u)"
 
@@ -116,6 +120,44 @@ EOF
     rm -f "$CLEAN_PLIST"
     echo "Removed $CLEAN_LABEL."
     ;;
+  review)
+    AGENT="${2:-claude}"
+    command -v "$AGENT" >/dev/null || { echo "$AGENT CLI not found on PATH." >&2; exit 1; }
+    AGENT_DIR="$(dirname "$(command -v "$AGENT")")"
+    mkdir -p "$LOG_DIR" "$(dirname "$REVIEW_PLIST")"
+    cat > "$REVIEW_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$REVIEW_LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$ROOT/scripts/review_session.sh</string>
+    <string>$AGENT</string>
+  </array>
+  <key>WorkingDirectory</key><string>$ROOT</string>
+  <key>StartInterval</key><integer>1800</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardOutPath</key><string>$LOG_DIR/review.log</string>
+  <key>StandardErrorPath</key><string>$LOG_DIR/review.log</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>$AGENT_DIR:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>ANIMAL_TRACKER_DATA</key><string>$HOME/Library/Application Support/AnimalTracker</string>
+  </dict>
+</dict>
+</plist>
+EOF
+    launchctl bootout "gui/$UID_NUM/$REVIEW_LABEL" 2>/dev/null || true
+    launchctl bootstrap "gui/$UID_NUM" "$REVIEW_PLIST"
+    echo "Installed $REVIEW_LABEL: '$AGENT' review session every 30 min (skips when the queue is empty). Log: $LOG_DIR/review.log"
+    ;;
+  uninstall-review)
+    launchctl bootout "gui/$UID_NUM/$REVIEW_LABEL" 2>/dev/null || true
+    rm -f "$REVIEW_PLIST"
+    echo "Removed $REVIEW_LABEL."
+    ;;
   *)
-    echo "usage: $0 [install|uninstall|status|cleanup|uninstall-cleanup]" >&2; exit 2 ;;
+    echo "usage: $0 [install|uninstall|status|cleanup|uninstall-cleanup|review [claude|codex]|uninstall-review]" >&2; exit 2 ;;
 esac

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# One-time setup for the WinstonTracker backend on the Mac Mini.
+# One-time install: Python environment + dependencies + tests.
+# Your property's configuration is a separate step: scripts/run.sh setup
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -10,6 +11,8 @@ if ! command -v "$PYTHON" >/dev/null; then
   echo "python3 not found. Install it with: brew install python" >&2
   exit 1
 fi
+"$PYTHON" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' || {
+  echo "Python 3.11+ required (found $("$PYTHON" --version))." >&2; exit 1; }
 
 echo "==> Creating virtualenv at .venv"
 [ -d .venv ] || "$PYTHON" -m venv .venv
@@ -18,26 +21,23 @@ source .venv/bin/activate
 pip install --quiet --upgrade pip
 pip install --quiet -r backend/requirements.txt
 
-if [ ! -f .env ]; then
-  cp .env.example .env
-  echo "==> Created .env from .env.example — fill in ANTHROPIC_API_KEY and Ring credentials."
-fi
-
-mkdir -p backend/reference_images backend/ring_downloads
+DATA_DIR="${ANIMAL_TRACKER_DATA:-$HOME/Library/Application Support/AnimalTracker}"
+mkdir -p "$DATA_DIR/config" "$DATA_DIR/reference_images"
+echo "==> Site data directory: $DATA_DIR"
 
 if command -v ffmpeg >/dev/null; then
   echo "==> ffmpeg found (fallback frame extractor available)"
 else
-  echo "==> ffmpeg not found; OpenCV will be used for frame extraction (brew install ffmpeg for the fallback)"
+  echo "==> ffmpeg not found; OpenCV will be used (brew install ffmpeg for the fallback)"
 fi
 
 echo "==> Running tests"
 (cd backend && python -m pytest -q -p no:warnings)
 
-N_REF=$(find backend/reference_images -type f ! -name '.gitkeep' | wc -l | tr -d ' ')
 echo
-echo "Setup complete."
-echo "  Reference photos of Winston in backend/reference_images: $N_REF (aim for 4-6 clear shots)"
-echo "  Edit backend/config/cameras.yaml so camera IDs match your Ring device names."
-echo "  Then: scripts/run.sh api        # start the query API"
-echo "        scripts/run.sh pipeline   # start the Ring poller (prompts for Ring 2FA the first time)"
+echo "Install complete. Next:"
+if [ ! -f "$DATA_DIR/config/settings.yaml" ]; then
+  echo "  scripts/run.sh setup                  # Ring login, pick cameras, define zones, notifications"
+fi
+echo "  scripts/run.sh doctor                 # check everything, with fixes"
+echo "  scripts/install-launchd.sh install    # run at login, restart on crash"

@@ -1,18 +1,18 @@
 # Local Vision Model Research
 
 *Research completed 2026-09-20. Evaluates local/edge vision models for
-replacing or complementing the Claude session detector in WinstonTracker.*
+replacing or complementing the Claude session detector in Animal Tracker.*
 
-**Goal:** Identify a specific Great Dane (Winston) in Ring camera frames
+**Goal:** Identify a specific enrolled animal in Ring camera frames
 without requiring an Anthropic API key or Claude session — running entirely
 on the Mac Mini (Apple Silicon), free and open source.
 
 **Current system:** A scheduled Claude session views staged frames every
-30 minutes and returns a structured verdict (see `Session_Detection.md`).
+30 minutes and returns a structured verdict (see `.claude/skills/review-frames/SKILL.md`).
 This works but adds up to 30 minutes of detection latency and consumes
 Claude subscription usage. A local vision layer could either replace
 the Claude session entirely or serve as a fast pre-filter that skips
-the session for obvious cases (no animal, cat, raccoon, clearly Winston).
+the session for obvious cases (no animal, cat, raccoon, clearly the animal).
 
 ---
 
@@ -28,7 +28,7 @@ Ring event → 4 frames
   │   → bounding box crop of the dog region
   │
   ├─ Layer 1 (DINOv2, local, free): embed the crop → cosine similarity
-  │   vs Winston reference gallery embeddings
+  │   vs the reference gallery embeddings
   │   → structured features:
   │     { dog_detected: true,
   │       winston_similarity: 0.91,
@@ -47,9 +47,9 @@ Ring event → 4 frames
 
 **Why two models instead of one:**
 - Vision models understand pixels; reasoning models understand context.
-  DINOv2 can tell you "this dog looks 91% like Winston" but it doesn't
-  know that Winston was last seen 2 minutes ago at the neighboring camera,
-  which makes a 91% visual match much more likely to be him.
+  DINOv2 can tell you "this dog looks 91% like the enrolled animal" but it doesn't
+  know that the animal was last seen 2 minutes ago at the neighboring camera,
+  which makes a 91% visual match much more likely to be the same animal.
 - Jev takes structured state and returns typed decisions with calibrated
   probabilities — exactly the signal fusion that `fuse_signals` does today.
 - Total cost per decision: ~$0.0004 (Jev) + $0 (local vision) = ~$0.0004.
@@ -75,7 +75,7 @@ decisions. Not an LLM — it doesn't generate text. You send typed
 questions against a state and get typed answers with calibrated
 probabilities.
 
-**Why it fits WinstonTracker:** Our `fuse_signals` function already
+**Why it fits Animal Tracker:** Our `fuse_signals` function already
 combines `is_winston_confidence`, `visual_similarity`,
 `size_appearance_compatible`, and `temporal_likelihood` into a single
 `winston_probability`. Jev does exactly this kind of structured decision
@@ -92,7 +92,7 @@ outcomes.
 | SDK | Python: `pip install typesafe-ai` |
 | Primitives | Choice (pick from options), Score (0–N rubric), Noul (true/false with probability) |
 
-**How we'd use it for Winston:**
+**How we'd use it:**
 
 ```python
 from typesafe import TypeSafe
@@ -116,7 +116,7 @@ response = client.systemone(
         {
             "type": "noul",
             "name": "is_winston",
-            "question": "Is this animal Winston, the specific Great Dane being tracked?"
+            "question": "Is this the specific animal being tracked?"
         },
         {
             "type": "choice",
@@ -140,7 +140,7 @@ response = client.systemone(
 
 ### Category A: Image similarity / embeddings (RECOMMENDED)
 
-These models embed images into vector space. Embed Winston's reference
+These models embed images into vector space. Embed the animal's reference
 photos once, then compare each new frame's embedding via cosine
 similarity. This is the fastest and most accurate approach for "is this
 the SAME dog?" rather than "is this A dog?"
@@ -162,9 +162,9 @@ feature extraction without labels.
 | Instance matching | Better than CLIP at distinguishing two instances of the same type |
 | License | Apache 2.0 |
 
-**Why DINOv2 for Winston:** The key insight from the research is that
+**Why DINOv2:** The key insight from the research is that
 DINOv2 dramatically outperforms CLIP on fine-grained, same-species
-instance matching. Telling apart "Winston" from "another Great Dane"
+instance matching. Telling apart "the animal" from "another dog of the same breed"
 is exactly the iNaturalist-style problem where DINOv2 excels.
 
 **Usage pattern:**
@@ -200,13 +200,13 @@ def winston_similarity(frame_crop):
 
 **Caveats:**
 - Raw DINOv2 features are shape-aware, not identity-aware — frequent
-  false positives on other Great Danes (or large dark dogs) are likely.
+  false positives on other dogs of the same breed (or large dark dogs) are likely.
   The project's existing `visual_similarity` field in the verdict schema
   maps directly to this cosine score; the threshold needs calibration
   on logged frames.
 - Specialized animal re-ID models (MegaDescriptor, MiewID) outperform
   DINOv2 by 20–70pp on re-ID benchmarks, but they require fine-tuning
-  on a Winston gallery. Worth investigating if DINOv2 alone proves too
+  on a reference gallery. Worth investigating if DINOv2 alone proves too
   noisy (see "Dog Re-ID Research" section below).
 - For Core ML / Neural Engine acceleration: convert via coremltools
   (`ct.convert(traced_model, inputs=[ct.ImageType(...)]))`. ANE dispatch
@@ -224,18 +224,18 @@ into a shared embedding space.
 | Speed | ViT-B/32: ~50–80ms per image on CPU after warmup |
 | Memory | ViT-B/32: ~600MB resident |
 | Install | `pip install open-clip-torch` |
-| Zero-shot text queries | Yes — can ask "Great Dane" vs "person" vs "cat" via text |
+| Zero-shot text queries | Yes — can ask "dog" vs "person" vs "cat" via text |
 | Instance matching | Weaker than DINOv2 for same-species individuals |
 | License | MIT |
 
 **Advantage over DINOv2:** CLIP can do zero-shot text classification
-("is this a Great Dane?" "is this a person?") in addition to image
+("is this a dog?" "is this a person?") in addition to image
 similarity. This makes it a good pre-filter: reject frames with
 low "dog" similarity to the text prompt before running DINOv2.
 
 **Complementary use:** Run CLIP text-similarity ("dog" vs "person" vs
 "cat" vs "nothing") as a fast reject gate, then DINOv2 image-similarity
-for the Winston-specific matching on frames that pass.
+for the animal-specific matching on frames that pass.
 
 #### SigLIP — **Drop-in CLIP replacement**
 
@@ -247,7 +247,7 @@ poorly calibrated; otherwise stick with OpenCLIP for ecosystem maturity.
 
 ### Category B: Small vision-language models (VLMs)
 
-These can answer free-form questions about images ("is this Winston?").
+These can answer free-form questions about images ("is this the enrolled animal?").
 More flexible than embeddings but slower and heavier. Overkill if
 embeddings + Jev cover the use case, but valuable as a fallback for
 ambiguous frames.
@@ -263,13 +263,13 @@ Purpose-built for fast, focused visual QA. Smallest useful VLM.
 | Speed (M4 Pro) | Moondream 2 4-bit: encode 95ms, decode 78 tok/s, **total 0.7s** |
 | Memory | Moondream 2 4-bit: ~1.1GB; FP16: ~3.7GB |
 | Install | `pip install moondream` (Photon); or via mlx-vlm |
-| Can answer "is this Winston?" | Yes — can do visual QA with reference context |
+| Can answer "is this the enrolled animal?" | Yes — can do visual QA with reference context |
 | Few-shot reference | Moondream 3.1 can accept reference images in prompt |
 | License | Apache 2.0 |
 
 **Best for:** Fallback on ambiguous frames where embeddings are
 inconclusive (similarity between 0.5–0.8). Ask Moondream "Is this a
-large black Great Dane with a light collar and natural floppy ears?"
+large golden retriever with a red collar?"
 and get a yes/no with reasoning.
 
 **Not ideal as the primary detector** because:
@@ -338,7 +338,7 @@ for box in results[0].boxes:
     if box.cls == 16:  # "dog" class
         crop = frame[int(box.xyxy[0][1]):int(box.xyxy[0][3]),
                      int(box.xyxy[0][0]):int(box.xyxy[0][2])]
-        # → feed crop to DINOv2 for Winston similarity
+        # → feed crop to DINOv2 for similarity to the enrolled animal
 ```
 
 ---
@@ -409,32 +409,32 @@ dependencies. However:
 - The Python SDK may not support image input yet (Swift API is primary)
 - No benchmarks available for visual QA accuracy
 - Cannot do reference-image comparison natively — would need to describe
-  Winston in text and ask "does this match?"
+  the animal in text and ask "does this match?"
 
 **Verdict:** Monitor closely. Once macOS 27 ships and the Python SDK
 confirms image support, this could replace Moondream as the "ambiguous
 frame" fallback — completely free, no downloads, no dependencies.
 
-### Create ML — Custom Winston classifier
+### Create ML — Custom animal classifier
 
 Apple's ML training framework can train a binary image classifier
-("Winston" vs "not Winston") from labeled photos.
+("target" vs "not target") from labeled photos.
 
 | attribute | value |
 |---|---|
 | Training | Create ML app (GUI) or CreateML framework (Swift) |
-| Input | Folders of labeled images (Winston/ and NotWinston/) |
+| Input | Folders of labeled images (Target/ and NotTarget/) |
 | Output | .mlmodel file, runs on Neural Engine |
 | Speed | Near-instant inference (Neural Engine optimized) |
 | Accuracy | Depends on training data; typically 90%+ for binary classification |
-| Training data | Winston reference photos + negative examples (other dogs, people, empty frames) |
+| Training data | reference photos of the animal + negative examples (other dogs, people, empty frames) |
 | Cost | Free |
 
-**Assessment:** The most direct approach for binary "is this Winston?"
+**Assessment:** The most direct approach for binary "is this the enrolled animal?"
 but requires:
-- Enough training images of Winston (ideally 50+, diverse conditions)
+- Enough training images of the animal (ideally 50+, diverse conditions)
 - Negative examples (other dogs, people, empty frames)
-- Retraining when Winston's appearance changes (new collar, weight change)
+- Retraining when the animal's appearance changes (new collar, weight change)
 - No similarity score — just binary classification with confidence
 
 **Best used as:** An additional signal alongside DINOv2 embeddings.
@@ -473,13 +473,13 @@ set to `.cpuAndNeuralEngine` vs `.all` to measure the real difference.
 ### VisionKit / Live Text
 
 No animal recognition capabilities. Live Text is OCR-focused (text,
-barcodes, QR codes). Not relevant for Winston detection.
+barcodes, QR codes). Not relevant for target detection.
 
 ---
 
 ## Dog re-identification research (for later)
 
-If DINOv2 embeddings alone prove too noisy (confusing Winston with
+If DINOv2 embeddings alone prove too noisy (confusing the animal with
 other large dark dogs), these specialized models are the next step:
 
 | Model | What it does | Stars | Status |
@@ -492,7 +492,7 @@ other large dark dogs), these specialized models are the next step:
 | DogReID-1553 | Video-based dog re-ID dataset | <5★ | Academic |
 
 **The recipe:** YOLO crop → specialized embedding model → cosine
-similarity vs Winston gallery. This is the approach used by the
+similarity vs the reference gallery. This is the approach used by the
 `ddyy-hash/dog-reid-…` project (YOLOv8 + SAM + OSNet).
 
 ---
@@ -521,20 +521,20 @@ pet identification.** The closest:
 
 **Components:**
 1. YOLO11n or Apple Vision `VNRecognizeAnimalsRequest` for dog detection
-2. DINOv2 ViT-S (22M params) for Winston similarity
+2. DINOv2 ViT-S (22M params) for similarity to the enrolled animal
 3. Threshold tuning on logged frames from `staging/archive/`
 
 **Logic:**
 ```
 similarity = dinov2_similarity(crop, winston_gallery)
-if similarity > 0.85:    → auto-accept as Winston (skip Claude session)
-if similarity < 0.30:    → auto-reject (not Winston, skip session)
+if similarity > 0.85:    → auto-accept as the animal (skip Claude session)
+if similarity < 0.30:    → auto-reject (not the target animal, skip session)
 if 0.30 ≤ sim ≤ 0.85:   → uncertain, queue for Claude session or Jev
 ```
 
 **Estimated impact:**
 - Most events are "no animal" or "person only" → auto-rejected
-- Clear Winston sightings (good light, close range) → auto-accepted
+- Clear target sightings (good light, close range) → auto-accepted
 - Only ambiguous cases (night/IR, partial view, other dogs) need the
   reasoning layer
 
@@ -567,7 +567,7 @@ If Phases 1+2 prove accurate on the logged frame archive:
 
 - Convert DINOv2 to Core ML for Neural Engine speed
 - Evaluate Apple Foundation Models for the "ambiguous frame" tier
-- Train a Create ML Winston classifier from accumulated frames
+- Train a Create ML classifier from accumulated frames
 - Potentially run the entire pipeline on Neural Engine with zero
   external dependencies
 
@@ -650,7 +650,7 @@ If Phases 1+2 prove accurate on the logged frame archive:
 ## Measured results, 2026-09-22 (P4-12 + P4-11 shipped)
 
 Both layers were benchmarked against every archived event that already had a
-recorded session verdict — 575 events, 215 of them Winston — rather than
+recorded session verdict — 575 events, 215 of them the target animal — rather than
 against published benchmarks. Ground truth is the session verdict stored with
 each observation, matched by `extra.staging_key`.
 
@@ -663,8 +663,8 @@ each observation, matched by `extra.staging_key`.
 
 8.7 ms/frame on the Neural Engine. PRESENT is perfect — zero false positives
 in 352 animal-free events. ABSENT is not usable as a drop signal: it misses
-40% of real animal events, 77 of them confident Winston sightings, 55 on
-`side-deck` where he lies curled on his bed under a fisheye lens, often in
+40% of real animal events, 77 of them confident target sightings, 55 on
+a deck camera where the dog lies curled on a bed under a fisheye lens, often in
 night IR. `VNRecognizeAnimalsRequest` finds standing and walking dogs.
 `skip_on_absent` therefore defaults to **false**.
 
@@ -676,7 +676,7 @@ crop. Gallery: the 6 enrolled reference photos, cached at `staging/gallery.pt`.
 Score distribution (best frame per event, cropped to the gate box when there
 is one):
 
-| band | Winston | not Winston |
+| band | target | not target |
 |---|---|---|
 | 0.45–0.60 | 82 | 1 |
 | 0.35–0.45 | 40 | 11 |
@@ -684,14 +684,14 @@ is one):
 | < 0.25 | 15 | 176 |
 
 * **Accept ≥ 0.50 with a gate box: 45 events, 45/45 correct.** That is 21% of
-  all Winston events and 7.8% of all events.
+  all target events and 7.8% of all events.
 * **Reject ≤ 0.10: 7 events, zero sightings lost.** Every higher cut-off
   costs real sightings (0.15 → 1, 0.20 → 10, 0.30 → 40), because a full-frame
-  embedding scores the *scene*, and "the deck with Winston on it" and "the
+  embedding scores the *scene*, and "the deck with the animal on it" and "the
   deck" are neighbours in embedding space.
-* The single non-Winston event above 0.45 scored 0.494 and had a session
+* The single non-target event above 0.45 scored 0.494 and had a session
   confidence of 0.68 — just under the 0.70 ground-truth cut-off, so it is
-  probably Winston too.
+  probably the animal too.
 
 ### What this does and does not buy
 
@@ -700,5 +700,5 @@ precision, and it gives every staged event a bounding box and a similarity
 score as a hint for whoever reviews it. It does **not** make the backlog
 disappear: 92% of events still need a verdict, and the volume is dominated by
 person-only and empty-scene events that DINOv2 scores in the same range as
-Winston lying on his bed. See ROADMAP P4-17 — a per-camera empty-scene
+the animal lying on a bed. A per-camera empty-scene
 reference is the cheapest thing that targets that volume directly.

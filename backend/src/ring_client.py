@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator
 
 from .observation import parse_timestamp
+from .paths import resolve
 from .state_machine import normalize_camera_id
 
 log = logging.getLogger(__name__)
@@ -57,23 +58,23 @@ class MotionEvent:
 
 @dataclass
 class RingSettings:
-    token_cache: Path = Path("./ring_token.cache")
+    token_cache: Path = field(default_factory=lambda: resolve("ring_token.cache"))
     poll_interval_seconds: float = 15.0
     device_ids: tuple[str, ...] | None = None
     event_kinds: tuple[str, ...] = ("motion", "ding")
     ring_classifications: tuple[str, ...] | None = None
-    download_dir: Path = Path("./ring_downloads")
+    download_dir: Path = field(default_factory=lambda: resolve("ring_downloads"))
 
     @classmethod
     def from_dict(cls, d: dict[str, Any] | None) -> "RingSettings":
         d = d or {}
         return cls(
             device_ids=tuple(str(v) for v in d["device_ids"]) if "device_ids" in d else None,
-            token_cache=Path(d.get("token_cache", "./ring_token.cache")),
+            token_cache=resolve(d.get("token_cache", "ring_token.cache")),
             poll_interval_seconds=float(d.get("poll_interval_seconds", 15)),
             event_kinds=tuple(d.get("event_kinds", ("motion", "ding"))),
             ring_classifications=tuple(d["ring_classifications"]) if d.get("ring_classifications") else None,
-            download_dir=Path(d.get("download_dir", "./ring_downloads")),
+            download_dir=resolve(d.get("download_dir", "ring_downloads")),
         )
 
 

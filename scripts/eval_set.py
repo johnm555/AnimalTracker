@@ -30,18 +30,19 @@ from src import evalset  # noqa: E402
 
 
 def _settings() -> dict:
-    p = Path(os.environ.get("WINSTON_SETTINGS", BACKEND / "config" / "settings.yaml"))
-    return yaml.safe_load(p.read_text()) or {}
+    from src.api import load_settings
+    return load_settings()
 
 
 def _resolve(p: str | Path) -> Path:
-    p = Path(p)
-    return p if p.is_absolute() else BACKEND / p
+    from src.paths import resolve
+    return resolve(p)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--out", default=str(BACKEND / "evalset" / "v1"))
+    from src.paths import data_dir
+    ap.add_argument("--out", default=str(data_dir() / "evalset" / "v1"))
     sub = ap.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build")
     b.add_argument("--db", help="SQLite path (default: settings database.path); opened read-only")
@@ -55,7 +56,7 @@ def main() -> int:
 
     if args.cmd == "build":
         s = _settings()
-        db = _resolve(args.db or (s.get("database") or {}).get("path", "./winston.db"))
+        db = _resolve(args.db or (s.get("database") or {}).get("path", "./tracker.db"))
         staging = _resolve((s.get("detector") or {}).get("staging_dir", "./staging"))
         archive = Path(args.archive) if args.archive else staging / "archive"
         gallery = evalset.load_gallery_event_ids(

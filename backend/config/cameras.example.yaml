@@ -1,31 +1,49 @@
 # Animal Tracker — camera topology template.
-# Copy to ~/Library/Application Support/AnimalTracker/config/cameras.yaml
-# and define your property's zones, cameras, and travel windows.
 #
-# Each zone has:
-#   cameras: list of camera IDs that cover this zone
-#   neighbors: which zones are adjacent and how long travel takes
-#     min_seconds: fastest plausible travel time (0 = unknown)
-#     max_seconds: slowest plausible travel time
+# `scripts/run.sh setup` writes this file for you (to the data dir,
+# ~/Library/Application Support/AnimalTracker/config/cameras.yaml). This copy is
+# the example property used throughout the docs:
 #
-# Camera IDs are normalized: lowercase, spaces → hyphens.
+#      living-room ── kitchen ── back-deck ── yard
+#           │                                  (yard-cam + garden-cam)
+#      front-door  (doorbell; high-priority: the way out)
+#
+# zones.<id>
+#   cameras      Ring camera names, normalised: lower-case, spaces → hyphens
+#                ("Kitchen Cam" → kitchen-cam). Cameras that see the same place
+#                share a zone.
+#   neighbors    zones the animal can walk to directly, without passing another
+#                camera. A blind spot between two cameras is just travel time.
+#     max_seconds  a typical slow walk. Slower moves are still accepted, with
+#                  lower confidence.
+#     min_seconds  the fastest possible trip. Leave 0 until measured: a guessed
+#                  minimum makes the tracker reject real moves as impossible.
+# Neighbors only need declaring once; the reverse direction is filled in.
 
 zones:
-  house:
-    cameras: [indoor-cam]
-    description: Main indoor area
+  kitchen:
+    cameras: [kitchen-cam]
+    description: Kitchen
     neighbors:
-      backyard: {min_seconds: 5, max_seconds: 30}
-      front: {min_seconds: 10, max_seconds: 60}
+      living-room: {min_seconds: 0, max_seconds: 20}
+      back-deck: {min_seconds: 0, max_seconds: 30}
 
-  backyard:
-    cameras: [backyard-cam]
-    description: Back yard
+  living-room:
+    cameras: [living-room-cam]
+    description: Living room
     neighbors:
-      house: {min_seconds: 5, max_seconds: 30}
+      front-door: {min_seconds: 0, max_seconds: 30}
 
-  front:
+  back-deck:
+    cameras: [deck-cam]
+    description: Back deck
+    neighbors:
+      yard: {min_seconds: 0, max_seconds: 60}
+
+  yard:
+    cameras: [yard-cam, garden-cam]
+    description: Fenced yard (two cameras, one place)
+
+  front-door:
     cameras: [doorbell]
-    description: Front door / driveway area
-    neighbors:
-      house: {min_seconds: 10, max_seconds: 60}
+    description: Front door — straddles inside and outside

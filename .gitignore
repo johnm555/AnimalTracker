@@ -48,3 +48,7 @@ ios/**/*.xcodeproj/xcuserdata/
 # Stray FUSE/editor artifacts
 .fuse_hidden*
 backend/staging/gallery.pt
+
+# Agent tooling: share skills, keep local agent state private
+.claude/*
+!.claude/skills/

@@ -11,8 +11,11 @@
 #   scripts/run.sh ring-settings ...   Audit / tune Ring camera motion settings (see docs/Camera_Settings_Audit.md)
 #   scripts/run.sh findmy-login        One-time interactive FindMy.py iCloud login (2FA) for AirTag polling
 #   scripts/run.sh findmy-test         Verify AirTag location fetch works with saved session
+#   scripts/run.sh setup [--answers f] Configure your property: cameras, zones, notifications (writes the data dir)
+#   scripts/run.sh doctor [--json]     Check the installation; prints how to fix each problem
+#   scripts/run.sh train <cmd>         Improve the local models: status | harvest | evaluate | calibrate | eval-set | full
 #   scripts/run.sh test                Run the backend test suite
-#   scripts/run.sh watch-test          Run the Swift WinstonCore tests (works without Xcode)
+#   scripts/run.sh watch-test          Run the Swift AnimalTrackerCore tests (works without Xcode)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,11 +42,12 @@ elif [ -f .env ]; then
 fi
 
 cd backend
-HOST=$(python -c "from src.paths import settings_path; import yaml; print(yaml.safe_load(open(settings_path()))['api']['host'])")
-PORT=$(python -c "from src.paths import settings_path; import yaml; print(yaml.safe_load(open(settings_path()))['api']['port'])")
 
 case "${1:-api}" in
   api)
+    # Read host/port only here: `setup` and `doctor` must work before settings.yaml exists.
+    HOST=$(python -c "from src.paths import settings_path; import yaml; print(yaml.safe_load(open(settings_path()))['api']['host'])")
+    PORT=$(python -c "from src.paths import settings_path; import yaml; print(yaml.safe_load(open(settings_path()))['api']['port'])")
     exec uvicorn src.api:app --host "$HOST" --port "$PORT" --log-level info ;;
   ring-login)
     exec python -c "
@@ -70,6 +74,12 @@ for cam in c.get_cameras(): print('  ', cam['device_id'], cam['camera_id'])" ;;
     shift; exec python "$ROOT/scripts/cleanup.py" "$@" ;;
   eval-set)
     shift; exec python "$ROOT/scripts/eval_set.py" "$@" ;;
+  setup)
+    shift; exec python "$ROOT/scripts/setup_wizard.py" "$@" ;;
+  doctor)
+    shift; exec python "$ROOT/scripts/doctor.py" "$@" ;;
+  train)
+    shift; exec python "$ROOT/scripts/train.py" "$@" ;;
   calibrate-local)
     shift; exec python "$ROOT/scripts/calibrate_local.py" "$@" ;;
   findmy-login)
@@ -93,7 +103,7 @@ print('Session updated.')
   test)
     exec python -m pytest -q -p no:warnings ;;
   watch-test)
-    cd "$ROOT/ios/WinstonWatch"
+    cd "$ROOT/ios/AnimalTrackerWatch"
     if xcode-select -p 2>/dev/null | grep -q "Xcode.app"; then
       exec swift test
     fi
@@ -103,5 +113,5 @@ print('Session updated.')
     exec swift test -Xswiftc -F -Xswiftc "$FW" -Xlinker -F -Xlinker "$FW" \
          -Xlinker -rpath -Xlinker "$FW" -Xlinker -rpath -Xlinker "$LIB" ;;
   *)
-    echo "unknown command: $1" >&2; sed -n '2,7p' "$0"; exit 2 ;;
+    echo "unknown command: $1" >&2; sed -n '2,20p' "$0"; exit 2 ;;
 esac
