@@ -61,11 +61,11 @@ def check_data_dir(r: Report) -> Path:
     if env.is_file():
         keys = {line.split("=", 1)[0].strip() for line in env.read_text().splitlines()
                 if "=" in line and not line.lstrip().startswith("#")}
-        if "WINSTON_API_TOKEN" in keys:
+        if keys & {"ANIMAL_TRACKER_API_TOKEN", "WINSTON_API_TOKEN"}:
             r.add(PASS, ".env", "API write token set")
         else:
-            r.add(WARN, ".env", "WINSTON_API_TOKEN not set — API writes are unauthenticated",
-                  f"echo WINSTON_API_TOKEN=$(python3 -c 'import secrets;print(secrets.token_hex(24))') >> \"{env}\"")
+            r.add(WARN, ".env", "ANIMAL_TRACKER_API_TOKEN not set — API writes are unauthenticated",
+                  f"echo ANIMAL_TRACKER_API_TOKEN=$(python3 -c 'import secrets;print(secrets.token_hex(24))') >> \"{env}\"")
     else:
         r.add(WARN, ".env", f"{env} missing", "scripts/run.sh setup   (or copy .env.example there)")
     return d

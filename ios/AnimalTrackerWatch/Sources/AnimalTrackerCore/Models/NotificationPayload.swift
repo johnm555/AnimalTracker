@@ -28,7 +28,7 @@ public struct AnimalTrackerNotification: Codable, Equatable, Sendable {
     public var isHighPriority: Bool { type == .highPriority }
 
     /// Apply this notification to a cached snapshot so the UI updates instantly,
-    /// before the next `/winston/location` fetch.
+    /// before the next `/tracker/location` fetch.
     public func applied(to snapshot: LocationSnapshot, now: Date = Date()) -> LocationSnapshot {
         var s = snapshot
         s.state = .seen

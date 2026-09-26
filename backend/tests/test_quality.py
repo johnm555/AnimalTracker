@@ -84,25 +84,25 @@ def test_empty_denominators_and_capture_time_window():
 
 
 def test_review_api_auth_validation_and_no_tracker_side_effects(tmp_path, topology, monkeypatch):
-    monkeypatch.setenv("WINSTON_API_TOKEN", "review-token")
+    monkeypatch.setenv("ANIMAL_TRACKER_API_TOKEN", "review-token")
     ctx = AppContext.build(settings={"notifications": {"backend": "log"}},
                            topology=topology, db_path=str(tmp_path / "api.db"))
     obs = add(ctx.db, 0.95)
-    path = f"/winston/observations/{obs.id}/reviews"
+    path = f"/tracker/observations/{obs.id}/reviews"
     body = {"label": "winston", "reviewer": "owner", "notes": "Reference-matched visual evidence."}
     with TestClient(create_app(ctx)) as client:
         assert client.post(path, json=body).status_code == 401
         client.headers.update({"Authorization": "Bearer review-token"})
         assert client.post(path, json={**body, "label": "bear"}).status_code == 422
         assert client.post(path, json={**body, "notes": "  "}).status_code == 422
-        assert client.post("/winston/observations/999/reviews", json=body).status_code == 404
-        assert client.get("/winston/observations/999/reviews").status_code == 404
+        assert client.post("/tracker/observations/999/reviews", json=body).status_code == 404
+        assert client.get("/tracker/observations/999/reviews").status_code == 404
         created = client.post(path, json=body)
         assert created.status_code == 201
         assert created.json()["observation_id"] == obs.id
         assert len(client.get(path).json()["reviews"]) == 1
-        assert client.get("/winston/quality").json()["totals"]["true_positive"] == 1
+        assert client.get("/tracker/quality").json()["totals"]["true_positive"] == 1
         for hours in (0, -1, 8761):
-            assert client.get("/winston/quality", params={"hours": hours}).status_code == 422
-        assert client.get("/winston/location").json()["state"] == "unknown"
+            assert client.get("/tracker/quality", params={"hours": hours}).status_code == 422
+        assert client.get("/tracker/location").json()["state"] == "unknown"
         assert ctx.db.list_transitions() == [] and ctx.db.list_notifications() == []

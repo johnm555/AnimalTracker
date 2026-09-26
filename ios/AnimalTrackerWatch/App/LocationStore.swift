@@ -33,7 +33,7 @@ final class LocationStore: ObservableObject {
         self.apiToken = shared.apiToken ?? ""
     }
 
-    /// Send the APNs device token to the backend (`POST /winston/devices`). Retried on
+    /// Send the APNs device token to the backend (`POST /tracker/devices`). Retried on
     /// every refresh until the backend confirms it, and again whenever the token changes.
     func registerDeviceIfNeeded(force: Bool = false) async {
         guard let token = shared.deviceToken, let client else { return }

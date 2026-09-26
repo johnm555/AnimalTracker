@@ -1,20 +1,24 @@
 """FastAPI server: the query surface for the Watch app and anything else.
 
-    GET  /winston/location                 current state + confidence + minutes since seen
-    GET  /winston/history?hours=N          movement history (transitions) for the last N hours
-    GET  /winston/transitions?date=YYYY-MM-DD
-    POST /winston/observation              ingest a new Observation (from the detector/pipeline)
-    GET  /winston/stats?hours=N            activity metrics
-    GET  /winston/trends?days=N            per-day inside/outside minutes + zone visits
-    POST /winston/devices                  register an APNs device token {token, platform?, name?}
-    DELETE /winston/devices/{token}        unregister
+    GET  /tracker/location                 current state + confidence + minutes since seen
+    GET  /tracker/history?hours=N          movement history (transitions) for the last N hours
+    GET  /tracker/transitions?date=YYYY-MM-DD
+    POST /tracker/observation              ingest a new Observation (from the detector/pipeline)
+    GET  /tracker/stats?hours=N            activity metrics
+    GET  /tracker/trends?days=N            per-day inside/outside minutes + zone visits
+    GET|POST /tracker/mute                 notification mute
+    POST /tracker/devices                  register an APNs device token {token, platform?, name?}
+    DELETE /tracker/devices/{token}        unregister
     GET  /healthz                          liveness + poller status (never a location)
+
+Every /tracker/* route is also served at its old /winston/* path, hidden from
+the OpenAPI schema and marked deprecated, until clients have moved.
 
 Run with:  uvicorn src.api:app --host 127.0.0.1 --port 8420
 
 When `pipeline.enabled` is true in settings.yaml (the default) the Ring
 poller runs as a background thread in this process, sharing the tracker and
-DB, so this one command is the whole system. Set WINSTON_PIPELINE=0 to serve
+DB, so this one command is the whole system. Set ANIMAL_TRACKER_PIPELINE=0 to serve
 without polling (tests, replay, a second read-only instance).
 """
 
@@ -35,7 +39,7 @@ from pydantic import AwareDatetime, BaseModel, Field, model_validator
 from .db import Database
 from .notification import NotificationPolicy, NotificationService, PolicyConfig, sender_from_settings
 from .observation import Observation, parse_timestamp, utcnow
-from .paths import data_dir, settings_path, cameras_path, db_path as resolve_db_path, resolve
+from .paths import data_dir, settings_path, cameras_path, db_path as resolve_db_path, env, resolve
 from .state_machine import LocationTracker, Topology, TrackerConfig
 
 log = logging.getLogger(__name__)
@@ -57,7 +61,7 @@ def configure_logging() -> None:
         handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
         handler._winston = True  # type: ignore[attr-defined]
         root.addHandler(handler)
-    level = os.environ.get("WINSTON_LOG_LEVEL", "INFO").upper()
+    level = (env("LOG_LEVEL") or "INFO").upper()
     for name in ("src", "pipeline"):
         logging.getLogger(name).setLevel(level)
     if root.level == logging.NOTSET or root.level > logging.INFO:
@@ -65,8 +69,7 @@ def configure_logging() -> None:
 
 
 def load_settings(path: str | Path | None = None) -> dict[str, Any]:
-    p = Path(path or os.environ.get("ANIMAL_TRACKER_SETTINGS",
-             os.environ.get("WINSTON_SETTINGS", settings_path())))
+    p = Path(path or env("SETTINGS") or settings_path())
     with open(p) as f:
         return yaml.safe_load(f) or {}
 
@@ -92,8 +95,7 @@ class AppContext:
               topology: Topology | None = None, notifier: NotificationService | None = None) -> "AppContext":
         settings = settings if settings is not None else load_settings()
         topology = topology or Topology.from_yaml(
-            os.environ.get("ANIMAL_TRACKER_CAMERAS",
-            os.environ.get("WINSTON_CAMERAS", cameras_path())))
+            env("CAMERAS") or cameras_path())
         db = Database(db_path or resolve_db_path(settings))
         db.sync_topology(topology)
         tracker = LocationTracker(topology, TrackerConfig.from_dict(settings.get("tracker")))
@@ -251,12 +253,12 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
         return request.app.state.ctx
 
     def require_write_token(authorization: str | None = Header(default=None)) -> None:
-        """Mutations need `Authorization: Bearer $WINSTON_API_TOKEN` when that env var is set.
+        """Mutations need `Authorization: Bearer $ANIMAL_TRACKER_API_TOKEN` when it is set.
 
         Reads stay open: the API is meant for a home LAN and the watch polls it.
         Without the env var (development, tests) writes are open too.
         """
-        expected = os.environ.get("WINSTON_API_TOKEN")
+        expected = env("API_TOKEN")
         if not expected:
             return
         if authorization != f"Bearer {expected}":
@@ -297,14 +299,16 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             out["status"] = "degraded"
         return out
 
-    @app.get("/winston/mute")
+    @app.get("/tracker/mute")
+    @app.get("/winston/mute", include_in_schema=False, deprecated=True)
     def mute_status(ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         with ctx.lock:
             if ctx.notifier is None:
                 raise HTTPException(status_code=503, detail="notification service unavailable")
             return ctx.notifier.mute_status()
 
-    @app.post("/winston/mute", dependencies=[Depends(require_write_token)])
+    @app.post("/tracker/mute", dependencies=[Depends(require_write_token)])
+    @app.post("/winston/mute", dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def mute(minutes: int = Query(default=60, ge=0, le=1440),
              ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         with ctx.lock:
@@ -312,19 +316,22 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
                 raise HTTPException(status_code=503, detail="notification service unavailable")
             return ctx.notifier.set_mute(minutes)
 
-    @app.post("/winston/devices", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/tracker/devices", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/winston/devices", status_code=201, dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def register_device(body: DeviceIn, ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         ctx.db.register_device_token(body.token.lower(), body.platform, body.name)
         return {"registered": True, "device_tokens": len(ctx.db.list_device_tokens())}
 
-    @app.delete("/winston/devices/{token}", dependencies=[Depends(require_write_token)])
+    @app.delete("/tracker/devices/{token}", dependencies=[Depends(require_write_token)])
+    @app.delete("/winston/devices/{token}", dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def unregister_device(token: str, ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         removed = ctx.db.remove_device_token(token.lower())
         if not removed:
             raise HTTPException(status_code=404, detail="unknown device token")
         return {"removed": True}
 
-    @app.get("/winston/location", response_model=LocationOut)
+    @app.get("/tracker/location", response_model=LocationOut)
+    @app.get("/winston/location", response_model=LocationOut, include_in_schema=False, deprecated=True)
     def location(ctx: AppContext = Depends(get_ctx)) -> LocationOut:
         now = utcnow()
         with ctx.lock:
@@ -338,7 +345,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             from_zone=d.get("from_zone"), to_zone=d.get("to_zone"), as_of=now,
         )
 
-    @app.get("/winston/history")
+    @app.get("/tracker/history")
+    @app.get("/winston/history", include_in_schema=False, deprecated=True)
     def history(hours: float = Query(default=24, gt=0, le=24 * 30),
                 ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         since = utcnow() - timedelta(hours=hours)
@@ -346,7 +354,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
         return {"since": since.isoformat(), "hours": hours,
                 "count": len(transitions), "transitions": transitions}
 
-    @app.get("/winston/transitions")
+    @app.get("/tracker/transitions")
+    @app.get("/winston/transitions", include_in_schema=False, deprecated=True)
     def transitions(date_: date | None = Query(default=None, alias="date"),
                     ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         day = date_ or datetime.now().astimezone().date()
@@ -356,14 +365,17 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
         rows = ctx.db.list_transitions(since=start, until=start + timedelta(days=1))
         return {"date": day.isoformat(), "count": len(rows), "transitions": rows}
 
-    @app.post("/winston/observation", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/tracker/observation", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/winston/observation", status_code=201, dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def post_observation(body: ObservationIn, ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         if ctx.topology.zone_for_camera(body.camera_id) is None:
             raise HTTPException(status_code=422, detail=f"unknown camera '{body.camera_id}'")
         return ctx.ingest(body.to_observation())
 
-    @app.post("/winston/observations/{observation_id}/reviews", status_code=201,
+    @app.post("/tracker/observations/{observation_id}/reviews", status_code=201,
               dependencies=[Depends(require_write_token)])
+    @app.post("/winston/observations/{observation_id}/reviews", status_code=201,
+              dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def review_observation(observation_id: int, body: ReviewIn,
                            ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         with ctx.lock:
@@ -373,7 +385,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
                 raise HTTPException(status_code=422, detail="reviewer and evidence notes are required")
             return ctx.db.insert_observation_review(observation_id, body.label, body.reviewer, body.notes)
 
-    @app.get("/winston/observations/{observation_id}/reviews")
+    @app.get("/tracker/observations/{observation_id}/reviews")
+    @app.get("/winston/observations/{observation_id}/reviews", include_in_schema=False, deprecated=True)
     def observation_reviews(observation_id: int, ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         with ctx.lock:
             if ctx.db.get_observation(observation_id) is None:
@@ -381,7 +394,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             return {"observation_id": observation_id,
                     "reviews": ctx.db.list_observation_reviews(observation_id)}
 
-    @app.post("/winston/detection-runs", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/tracker/detection-runs", status_code=201, dependencies=[Depends(require_write_token)])
+    @app.post("/winston/detection-runs", status_code=201, dependencies=[Depends(require_write_token)], include_in_schema=False, deprecated=True)
     def record_detection_run(body: DetectionRunIn, ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         with ctx.lock:
             try:
@@ -389,7 +403,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             except ValueError as error:
                 raise HTTPException(status_code=409, detail=str(error)) from error
 
-    @app.get("/winston/detection-runs")
+    @app.get("/tracker/detection-runs")
+    @app.get("/winston/detection-runs", include_in_schema=False, deprecated=True)
     def detection_runs(hours: float = Query(default=24, gt=0, le=8760),
                        limit: int = Query(default=100, ge=1, le=1000),
                        ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
@@ -397,7 +412,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
         with ctx.lock:
             return ctx.db.detection_runs_report(now - timedelta(hours=hours), now, limit)
 
-    @app.get("/winston/quality")
+    @app.get("/tracker/quality")
+    @app.get("/winston/quality", include_in_schema=False, deprecated=True)
     def quality(hours: float = Query(default=24, gt=0, le=24 * 365),
                 ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         from .quality import quality_report
@@ -406,7 +422,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             return quality_report(ctx.db, ctx.tracker.config.confidence_threshold,
                                   now - timedelta(hours=hours), now)
 
-    @app.get("/winston/stats")
+    @app.get("/tracker/stats")
+    @app.get("/winston/stats", include_in_schema=False, deprecated=True)
     def stats(hours: float = Query(default=24, gt=0, le=24 * 30),
               ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         now = utcnow()
@@ -451,7 +468,8 @@ def create_app(ctx: AppContext | None = None) -> FastAPI:
             raise HTTPException(status_code=422, detail=str(e))
         return ctx.db.record_animal_sighting(sighting)
 
-    @app.get("/winston/trends")
+    @app.get("/tracker/trends")
+    @app.get("/winston/trends", include_in_schema=False, deprecated=True)
     def trends(days: int = Query(default=7, ge=1, le=90),
                ctx: AppContext = Depends(get_ctx)) -> dict[str, Any]:
         return compute_trends(ctx, days, utcnow())
@@ -463,9 +481,9 @@ def start_poller(ctx: AppContext) -> None:
     """Start the in-process Ring poller unless disabled. Failures degrade /healthz, never the API."""
     from .pipeline import PipelineSettings, build_poller  # local import: pipeline imports this module
 
-    if os.environ.get("WINSTON_PIPELINE", "1") == "0" or not PipelineSettings.from_dict(
+    if env("PIPELINE", "1") == "0" or not PipelineSettings.from_dict(
             ctx.settings.get("pipeline")).enabled:
-        log.info("Ring poller disabled (pipeline.enabled=false or WINSTON_PIPELINE=0)")
+        log.info("Ring poller disabled (pipeline.enabled=false or ANIMAL_TRACKER_PIPELINE=0)")
         return
     try:
         ctx.poller = build_poller(ctx.settings, ctx)

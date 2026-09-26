@@ -1,6 +1,6 @@
 import Foundation
 
-/// Response of `GET /winston/location`. Also the shape persisted in the App
+/// Response of `GET /tracker/location`. Also the shape persisted in the App
 /// Group so the complication can render without a network call.
 public struct LocationSnapshot: Codable, Equatable, Sendable {
     public var state: TrackerState

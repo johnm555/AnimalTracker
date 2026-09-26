@@ -11,6 +11,7 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 from src.api import load_settings
+from src.paths import env  # noqa: E402
 
 
 def main() -> int:
@@ -23,12 +24,12 @@ def main() -> int:
     report.add_argument("--hours", type=float, default=24)
     args = p.parse_args()
     base = args.url or f"http://127.0.0.1:{load_settings().get('api', {}).get('port', 8420)}"
-    token = os.environ.get("WINSTON_API_TOKEN")
+    token = env("API_TOKEN")
     try:
         body = json.loads(args.file.read_text()) if args.command == "record" else None
         with httpx.Client(base_url=base, headers={"Authorization": f"Bearer {token}"} if token else {}, timeout=15) as c:
-            response = (c.post("/winston/detection-runs", json=body) if args.command == "record"
-                        else c.get("/winston/detection-runs", params={"hours": args.hours}))
+            response = (c.post("/tracker/detection-runs", json=body) if args.command == "record"
+                        else c.get("/tracker/detection-runs", params={"hours": args.hours}))
             response.raise_for_status()
             print(json.dumps(response.json(), indent=2))
     except httpx.HTTPStatusError as error:

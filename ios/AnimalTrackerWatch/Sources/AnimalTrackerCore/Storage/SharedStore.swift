@@ -58,7 +58,7 @@ public struct SharedStore: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Key.deviceToken) }
     }
 
-    /// Bearer token for backend writes (`WINSTON_API_TOKEN` on the server). Optional.
+    /// Bearer token for backend writes (`ANIMAL_TRACKER_API_TOKEN` on the server). Optional.
     public var apiToken: String? {
         get { defaults.string(forKey: Key.apiToken).flatMap { $0.isEmpty ? nil : $0 } }
         nonmutating set { defaults.set(newValue, forKey: Key.apiToken) }

@@ -213,9 +213,10 @@ def _backup(path: Path) -> None:
 def write_env() -> None:
     env = paths.env_path()
     lines = env.read_text().splitlines() if env.exists() else (ROOT / ".env.example").read_text().splitlines()
-    if not any(line.startswith("WINSTON_API_TOKEN=") and line.split("=", 1)[1].strip() for line in lines):
-        lines = [line for line in lines if not line.startswith("WINSTON_API_TOKEN=")]
-        lines.append(f"WINSTON_API_TOKEN={secrets.token_hex(24)}")
+    names = ("ANIMAL_TRACKER_API_TOKEN=", "WINSTON_API_TOKEN=")  # the second is the deprecated name
+    if not any(line.startswith(names) and line.split("=", 1)[1].strip() for line in lines):
+        lines = [line for line in lines if not line.startswith(names)]
+        lines.append(f"ANIMAL_TRACKER_API_TOKEN={secrets.token_hex(24)}")
     env.write_text("\n".join(lines) + "\n")
     os.chmod(env, 0o600)
 

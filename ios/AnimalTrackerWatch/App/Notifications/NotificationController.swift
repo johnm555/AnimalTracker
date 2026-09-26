@@ -41,7 +41,7 @@ final class NotificationController: NSObject, WKApplicationDelegate, UNUserNotif
             store.deviceToken = token
             store.registeredDeviceToken = nil   // new token: the backend must learn it
         }
-        // LocationStore posts it to `POST /winston/devices` on its next refresh.
+        // LocationStore posts it to `POST /tracker/devices` on its next refresh.
         NotificationCenter.default.post(name: .winstonDeviceTokenChanged, object: token)
     }
 

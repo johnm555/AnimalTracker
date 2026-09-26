@@ -25,11 +25,11 @@ public actor AnimalTrackerAPIClient {
     }
 
     public func location() async throws -> LocationSnapshot {
-        try await get("winston/location")
+        try await get("tracker/location")
     }
 
     public func history(hours: Double = 24) async throws -> [Transition] {
-        let list: TransitionList = try await get("winston/history", query: ["hours": String(hours)])
+        let list: TransitionList = try await get("tracker/history", query: ["hours": String(hours)])
         return list.transitions
     }
 
@@ -38,19 +38,19 @@ public actor AnimalTrackerAPIClient {
         f.calendar = calendar
         f.locale = Locale(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd"
-        let list: TransitionList = try await get("winston/transitions", query: ["date": f.string(from: day)])
+        let list: TransitionList = try await get("tracker/transitions", query: ["date": f.string(from: day)])
         return list.transitions
     }
 
     public func stats(hours: Double = 24) async throws -> Stats {
-        try await get("winston/stats", query: ["hours": String(hours)])
+        try await get("tracker/stats", query: ["hours": String(hours)])
     }
 
     /// Register this watch's APNs token so the backend can push to it
-    /// (`POST /winston/devices`). Idempotent; safe to call on every launch.
+    /// (`POST /tracker/devices`). Idempotent; safe to call on every launch.
     public func registerDevice(token: String, name: String? = nil, platform: String = "watchos") async throws {
         struct Body: Encodable { let token: String; let platform: String; let name: String? }
-        let _: DeviceRegistration = try await send("winston/devices", method: "POST",
+        let _: DeviceRegistration = try await send("tracker/devices", method: "POST",
                                                    body: Body(token: token, platform: platform, name: name))
     }
 
@@ -66,12 +66,12 @@ public actor AnimalTrackerAPIClient {
 
     /// Global alert mute. Zero minutes clears it; tracking/background updates continue.
     public func mute(minutes: Int = 60) async throws -> MuteStatus {
-        try await send("winston/mute", method: "POST", query: ["minutes": String(minutes)],
+        try await send("tracker/mute", method: "POST", query: ["minutes": String(minutes)],
                        body: Optional<Data>.none)
     }
 
     public func muteStatus() async throws -> MuteStatus {
-        try await get("winston/mute")
+        try await get("tracker/mute")
     }
 
     public struct MuteStatus: Decodable, Sendable {

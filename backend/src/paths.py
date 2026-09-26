@@ -33,6 +33,12 @@ SRC_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = SRC_DIR.parent
 
 
+def env(name: str, default: str | None = None) -> str | None:
+    """`ANIMAL_TRACKER_<name>`, falling back to the deprecated `WINSTON_<name>`."""
+    v = os.environ.get(f"ANIMAL_TRACKER_{name}")
+    return v if v is not None else os.environ.get(f"WINSTON_{name}", default)
+
+
 def data_dir() -> Path:
     """Return the site data directory, creating it if needed."""
     explicit = os.environ.get("ANIMAL_TRACKER_DATA")

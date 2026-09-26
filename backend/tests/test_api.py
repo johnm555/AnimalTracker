@@ -30,13 +30,13 @@ def client(tmp_path, topology):
 def post(c, camera, seconds, p, **kw):
     body = {"camera_id": camera, "timestamp": (T0 + timedelta(seconds=seconds)).isoformat(),
             "winston_probability": p, **kw}
-    r = c.post("/winston/observation", json=body)
+    r = c.post("/tracker/observation", json=body)
     assert r.status_code == 201, r.text
     return r.json()
 
 
 def test_location_unknown_initially(client):
-    r = client.get("/winston/location")
+    r = client.get("/tracker/location")
     assert r.status_code == 200
     assert r.json()["state"] == "unknown" and r.json()["zone"] is None
 
@@ -57,18 +57,18 @@ def test_observation_flow_and_notifications(client):
     assert r5["transition"]["from_zone"] == "side-yard"
     assert r5["notification"]["type"] == "high_priority"
 
-    loc = client.get("/winston/location").json()
+    loc = client.get("/tracker/location").json()
     assert loc["zone"] == "driveway"
     assert loc["state"] == "last_seen"  # T0 is an hour ago
     assert loc["minutes_ago"] >= 55
 
-    hist = client.get("/winston/history", params={"hours": 24}).json()
+    hist = client.get("/tracker/history", params={"hours": 24}).json()
     assert [t["to_zone"] for t in hist["transitions"]] == ["backyard", "side-yard", "driveway"]
 
-    day = client.get("/winston/transitions", params={"date": T0.astimezone().date().isoformat()}).json()
+    day = client.get("/tracker/transitions", params={"date": T0.astimezone().date().isoformat()}).json()
     assert day["count"] == 3
 
-    stats = client.get("/winston/stats", params={"hours": 24}).json()
+    stats = client.get("/tracker/stats", params={"hours": 24}).json()
     assert stats["transitions"] == 3
     assert stats["street_adjacent_visits"] == 1
     assert stats["low_confidence_observations"] == 0
@@ -76,23 +76,23 @@ def test_observation_flow_and_notifications(client):
 
 
 def test_unknown_camera_rejected(client):
-    r = client.post("/winston/observation", json={"camera_id": "garage", "winston_probability": 0.9})
+    r = client.post("/tracker/observation", json={"camera_id": "garage", "winston_probability": 0.9})
     assert r.status_code == 422
 
 
 def test_probability_validation(client):
-    r = client.post("/winston/observation", json={"camera_id": "backyard", "winston_probability": 1.5})
+    r = client.post("/tracker/observation", json={"camera_id": "backyard", "winston_probability": 1.5})
     assert r.status_code == 422
 
 
 def test_mute_auth_validation_and_delayed_transition(client, monkeypatch):
-    monkeypatch.setenv("WINSTON_API_TOKEN", "test-token")
-    assert client.post("/winston/mute").status_code == 401
+    monkeypatch.setenv("ANIMAL_TRACKER_API_TOKEN", "test-token")
+    assert client.post("/tracker/mute").status_code == 401
     headers = {"Authorization": "Bearer test-token"}
     for minutes in (-1, 1441, "invalid", "1.5"):
-        assert client.post("/winston/mute", params={"minutes": minutes}, headers=headers).status_code == 422
-    assert client.get("/winston/mute").json()["muted"] is False
-    response = client.post("/winston/mute", headers=headers)
+        assert client.post("/tracker/mute", params={"minutes": minutes}, headers=headers).status_code == 422
+    assert client.get("/tracker/mute").json()["muted"] is False
+    response = client.post("/tracker/mute", headers=headers)
     assert response.status_code == 200
     status = response.json()
     assert status["muted"] and status["scope"] == "all_devices"
@@ -103,14 +103,14 @@ def test_mute_auth_validation_and_delayed_transition(client, monkeypatch):
     result = post(client, "backyard", 0, 0.95)
     assert result["notification"]["type"] == "silent"
     assert "manual mute" in result["notification"]["reason"]
-    assert client.get("/winston/history").json()["count"] == 1
+    assert client.get("/tracker/history").json()["count"] == 1
     ctx = client.app.state.ctx
     assert len(ctx.db.list_observations()) == 1
     row = ctx.db.list_notifications()[0]
     assert row["type"] == "silent"
     assert "alert" not in row["payload"]["aps"]
     assert row["payload"]["aps"]["content-available"] == 1
-    assert client.post("/winston/mute?minutes=0").json()["muted"] is False
+    assert client.post("/tracker/mute?minutes=0").json()["muted"] is False
     result = post(client, "side-yard", 40, 0.95)
     assert result["notification"]["type"] == "normal"
 
@@ -156,12 +156,12 @@ def test_failed_mute_write_does_not_change_policy(client, monkeypatch):
 
 
 # --------------------------------------------------------------------------- #
-# P4-03: GET /winston/trends
+# P4-03: GET /tracker/trends
 # --------------------------------------------------------------------------- #
 
 def test_trends_empty_history_reports_zeroes_not_absence(client):
     """No data must read as 'nothing observed', never as a location claim."""
-    r = client.get("/winston/trends", params={"days": 3})
+    r = client.get("/tracker/trends", params={"days": 3})
     assert r.status_code == 200
     body = r.json()
     assert body["days"] == 3 and len(body["trends"]) == 3
@@ -174,7 +174,7 @@ def test_trends_empty_history_reports_zeroes_not_absence(client):
 
 
 def test_trends_only_today_is_partial(client):
-    body = client.get("/winston/trends", params={"days": 5}).json()
+    body = client.get("/tracker/trends", params={"days": 5}).json()
     assert [d["partial"] for d in body["trends"]] == [False, False, False, False, True]
     # A partial day is shorter than a full one and must not be averaged in.
     assert body["trends"][-1]["span_minutes"] <= 24 * 60
@@ -186,7 +186,7 @@ def test_trends_counts_todays_activity(client):
     post(client, "kitchen-door", 120, 0.95)
     post(client, "driveway", 300, 0.95)
 
-    body = client.get("/winston/trends", params={"days": 2}).json()
+    body = client.get("/tracker/trends", params={"days": 2}).json()
     today = body["trends"][-1]
     assert today["partial"] is True
     assert today["transitions"] == 3 and today["sightings"] == 3
@@ -198,13 +198,13 @@ def test_trends_counts_todays_activity(client):
 
 
 def test_trends_day_count_is_bounded(client):
-    assert client.get("/winston/trends", params={"days": 0}).status_code == 422
-    assert client.get("/winston/trends", params={"days": 91}).status_code == 422
-    assert client.get("/winston/trends", params={"days": 90}).status_code == 200
+    assert client.get("/tracker/trends", params={"days": 0}).status_code == 422
+    assert client.get("/tracker/trends", params={"days": 91}).status_code == 422
+    assert client.get("/tracker/trends", params={"days": 90}).status_code == 200
 
 
 def test_trends_defaults_to_a_week(client):
-    body = client.get("/winston/trends").json()
+    body = client.get("/tracker/trends").json()
     assert body["days"] == 7 and body["timezone"]
 
 
@@ -320,3 +320,15 @@ def test_imessage_sender_from_settings():
     sender = IMessageSender.from_settings({"recipient": "john@example.com", "settle_seconds": 120})
     assert sender.recipient == "john@example.com"
     assert sender.settle_seconds == 120.0
+
+
+def test_legacy_winston_routes_and_token_still_work(client, monkeypatch):
+    """/winston/* and WINSTON_API_TOKEN are deprecated aliases until clients move."""
+    old, new = client.get("/winston/location").json(), client.get("/tracker/location").json()
+    assert {k: v for k, v in old.items() if k != "as_of"} == {k: v for k, v in new.items() if k != "as_of"}
+    schema_paths = client.get("/openapi.json").json()["paths"]
+    assert "/tracker/location" in schema_paths and not any(p.startswith("/winston/") for p in schema_paths)
+    monkeypatch.delenv("ANIMAL_TRACKER_API_TOKEN", raising=False)
+    monkeypatch.setenv("WINSTON_API_TOKEN", "legacy")
+    assert client.post("/tracker/mute").status_code == 401
+    assert client.post("/winston/mute", headers={"Authorization": "Bearer legacy"}).status_code == 200

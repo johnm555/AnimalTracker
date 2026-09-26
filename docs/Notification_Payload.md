@@ -61,7 +61,7 @@ Zone display names: the watch app maps ids → labels itself
 
 - Decode `winston` first; if it's missing, treat as a plain alert.
 - On `silent`: refresh the complication timeline from
-  `GET /winston/location`; don't show UI.
+  `GET /tracker/location`; don't show UI.
 - Time-sensitive delivery requires the *Time Sensitive Notifications*
   capability on the app target.
 - Payload size stays well under APNs' 4 KB limit.
@@ -69,10 +69,10 @@ Zone display names: the watch app maps ids → labels itself
 
 ## Manual mute (P2-09, 2026-09-21)
 
-`POST /winston/mute?minutes=60` uses the same bearer authentication as other
+`POST /tracker/mute?minutes=60` uses the same bearer authentication as other
 write endpoints. Duration is an integer from 0 to 1440 minutes (default 60);
 zero immediately unmutes. Each request replaces the previous expiry relative
-to server wall time. `GET /winston/mute` reports the current setting:
+to server wall time. `GET /tracker/mute` reports the current setting:
 
 ```json
 {"muted":true,"muted_until":"2026-09-21T22:00:00+00:00","scope":"all_devices","as_of":"2026-09-21T21:00:00+00:00"}

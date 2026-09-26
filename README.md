@@ -143,23 +143,23 @@ folder, and replay them: `scripts/run.sh replay ./fixtures`.
 
 | Endpoint | Returns |
 |---|---|
-| `GET /winston/location` | `state` (`seen` · `transitioning` · `last_seen` · `unknown`), zone, confidence, `last_seen_at`, `minutes_ago` |
-| `GET /winston/history?hours=24` | transitions in the last N hours |
-| `GET /winston/transitions?date=YYYY-MM-DD` | transitions on a local day |
-| `GET /winston/stats?hours=24` · `/winston/trends?days=7` | time inside/outside, per-zone minutes, daily trends |
-| `POST /winston/observation` | ingest an observation → accepted?, transition, notification decision |
-| `GET/POST /winston/mute` | notification mute state |
-| `POST /winston/devices` | register a watch for APNs |
+| `GET /tracker/location` | `state` (`seen` · `transitioning` · `last_seen` · `unknown`), zone, confidence, `last_seen_at`, `minutes_ago` |
+| `GET /tracker/history?hours=24` | transitions in the last N hours |
+| `GET /tracker/transitions?date=YYYY-MM-DD` | transitions on a local day |
+| `GET /tracker/stats?hours=24` · `/tracker/trends?days=7` | time inside/outside, per-zone minutes, daily trends |
+| `POST /tracker/observation` | ingest an observation → accepted?, transition, notification decision |
+| `GET/POST /tracker/mute` | notification mute state |
+| `POST /tracker/devices` | register a watch for APNs |
 | `GET /animals` | sightings of other animals, by species |
 | `GET /healthz` | poller, local models, storage and notification status — never a location |
 
-When `WINSTON_API_TOKEN` is set (the setup wizard generates one), writes require
+When `ANIMAL_TRACKER_API_TOKEN` is set (the setup wizard generates one), writes require
 `Authorization: Bearer <token>`; without it the API accepts writes from anyone on
-your network, and `doctor` warns. The `/winston/…` paths and `WINSTON_*` names predate the rename
-and will change together with the watch app.
+your network, and `doctor` warns. Interactive docs for every endpoint are at
+`http://<mac>:8420/docs`.
 
 ```json
-GET /winston/location
+GET /tracker/location
 {"state": "seen", "zone": "yard", "confidence": 0.93,
  "last_seen_at": "2026-09-20T15:02:11+00:00", "minutes_ago": 0.7}
 ```

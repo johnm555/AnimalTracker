@@ -13,6 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ["ANIMAL_TRACKER_DATA"] = tempfile.mkdtemp(prefix="animaltracker-test-")
 os.environ.pop("ANIMAL_TRACKER_SETTINGS", None)
 os.environ.pop("ANIMAL_TRACKER_CAMERAS", None)
+for _name in ("ANIMAL_TRACKER_API_TOKEN", "WINSTON_API_TOKEN", "WINSTON_SETTINGS", "WINSTON_CAMERAS"):
+    os.environ.pop(_name, None)
 
 from src.observation import Observation  # noqa: E402
 from src.state_machine import Topology  # noqa: E402

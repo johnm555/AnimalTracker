@@ -10,7 +10,7 @@ description: Diagnose a misbehaving Animal Tracker install — location stuck on
    prints a fix for each problem. Work through FAILs first.
 2. Logs: `tail -50 ~/Library/Logs/WinstonTracker/api.err.log`.
 3. Live state: `curl -s localhost:8420/healthz | python3 -m json.tool` and
-   `curl -s localhost:8420/winston/location`.
+   `curl -s localhost:8420/tracker/location`.
 
 ## Symptoms
 

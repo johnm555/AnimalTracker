@@ -47,9 +47,9 @@ Signing: team `KBGYVG6F36` (John Marshall), automatic signing, bundle ids
 `group.com.johnmarshall.winstontracker` — all set in `project.yml`; regenerate
 with `xcodegen generate` after editing it. Xcode must be signed in to that
 AppleID for automatic provisioning to register the App Group and APNs. The backend listens on `0.0.0.0:8420`;
-enter `http://<mac-mini-lan-ip>:8420` (and the `WINSTON_API_TOKEN`, if set) in
+enter `http://<mac-mini-lan-ip>:8420` (and the `ANIMAL_TRACKER_API_TOKEN`, if set) in
 the app's Settings. On first refresh after APNs issues a token the app POSTs it
-to `/winston/devices`; Settings → Push shows "Backend: registered" once the
+to `/tracker/devices`; Settings → Push shows "Backend: registered" once the
 server has it. To build from the command line on a Mac whose `xcode-select`
 points at the Command Line Tools:
 

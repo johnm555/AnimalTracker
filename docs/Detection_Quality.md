@@ -23,16 +23,16 @@ to be the owner. This is a review sample, not independent ground truth or a
 production accuracy certification.
 
 `--url http://mini-host:8420` before `review` or `report` selects a backend.
-Writes require the configured `WINSTON_API_TOKEN`; the wrapper loads `.env`.
+Writes require the configured `ANIMAL_TRACKER_API_TOKEN`; the wrapper loads `.env`.
 The CLI only writes through the running API, with no offline tracker fallback.
 An unreachable server or HTTP error exits nonzero without claiming success.
 
 ## API and persistence
 
-- `POST /winston/observations/{id}/reviews`: JSON `{label, reviewer, notes}`;
+- `POST /tracker/observations/{id}/reviews`: JSON `{label, reviewer, notes}`;
   returns 201 and the review record. Bearer-authenticated like other writes.
-- `GET /winston/observations/{id}/reviews`: full append-only review history.
-- `GET /winston/quality?hours=24`: overall/per-camera counts and rates, capture
+- `GET /tracker/observations/{id}/reviews`: full append-only review history.
+- `GET /tracker/quality?hours=24`: overall/per-camera counts and rates, capture
   time window and the current configured detection threshold. Hours: >0–8760.
 
 `observation_reviews` stores observation ID, label, reviewer, evidence notes,
