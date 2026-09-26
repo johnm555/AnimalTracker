@@ -41,14 +41,14 @@ Two ideas do all the work:
 
 **Example property** — the one in `backend/config/cameras.example.yaml`, which
 `run.sh setup` replaces with yours. Edges are neighbors, labelled with a slow
-walk in seconds; bold is high-priority:
+walk in seconds; ⚠ marks the high-priority zone:
 
 ```mermaid
 flowchart LR
-    living["living-room<br/><small>living-room-cam</small>"] ---|20 s| kitchen["kitchen<br/><small>kitchen-cam</small>"]
-    kitchen ---|30 s| deck["back-deck<br/><small>deck-cam</small>"]
-    deck ---|60 s| yard["yard<br/><small>yard-cam · garden-cam</small>"]
-    living ---|30 s| front["<b>front-door</b><br/><small>doorbell</small>"]
+    living["living-room<br/>living-room-cam"] ---|20 s| kitchen["kitchen<br/>kitchen-cam"]
+    kitchen ---|30 s| deck["back-deck<br/>deck-cam"]
+    deck ---|60 s| yard["yard<br/>yard-cam · garden-cam"]
+    living ---|30 s| front["front-door ⚠<br/>doorbell"]
     style front stroke-width:3px
 ```
 
