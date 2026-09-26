@@ -101,8 +101,7 @@ process or talk over HTTP (`--post`).
 ## ADR-009 — Poll Ring history first, push later
 
 **Decision.** v0 polls `history()` every 15 s. FCM push
-(`RingEventListener`) is the planned upgrade (see
-[Ring_API_Research.md](Ring_API_Research.md)).
+(`RingEventListener`) is the planned upgrade.
 
 **Why.** Polling is sync and simple; push needs an asyncio task and FCM
 credential persistence. Latency of 15–60 s is acceptable for v0 because clips
@@ -157,8 +156,8 @@ question, and records the verdict with `scripts/run.sh detect record-batch`.
 The verdict is the same `DETECTION_SCHEMA` JSON the API path returns and
 goes through the unchanged `WinstonDetector.to_observation()` fusion, then
 `POST /winston/observation`. `detector.mode: api` keeps the original
-in-process model call for the day a key exists. Details:
-[Session_Detection.md](Session_Detection.md).
+in-process model call for the day a key exists. Details: `scripts/detect_pending.py` and
+[the review-frames skill](../.claude/skills/review-frames/SKILL.md).
 
 **Why.** Everything downstream — fusion, tracker, notifications, watch —
 is agnostic to *who* produced the verdict. Staging on disk decouples the

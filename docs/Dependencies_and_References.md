@@ -30,7 +30,7 @@ ideas, don't depend on it. **Rejected**: looked at, not using, reason given.
 - https://github.com/python-ring-doorbell/python-ring-doorbell — 699 ★, pushed 2026-02-28, v0.9.14
 - Python, sync + async, 2FA + refresh-token callback, history, recording download, snapshots, FCM push listener (`ring_doorbell[listen]`, built on `sdb9696/firebase-messaging`, 16 ★ but the same author co-maintains ring-doorbell and Home Assistant's Ring integration).
 - Powers Home Assistant's `ring` integration, so it is exercised by thousands of installs even though the repo itself is quiet.
-- Use for: everything in `backend/src/ring_client.py`. Full API notes in [Ring_API_Research.md](Ring_API_Research.md).
+- Use for: everything in `backend/src/ring_client.py`. The module docstring documents auth, history, recordings and pitfalls.
 - Caveat: no live-video/WebRTC support. Cadence is slow (last push Feb 2026); if Ring breaks auth, the Node ecosystem below usually fixes it first — watch their changelogs.
 
 ### dgreif/ring (`ring-client-api`) — **Reference** (most active Ring client)
@@ -89,7 +89,7 @@ Vision's Memory is the nearest. Keep ours.
 **2026-09-20: the Anthropic API dependency is removed for the MVP.** There
 is no API key (subscription plan only). The same prompt, schema and fusion
 run in *session mode*: a scheduled Claude Code session views staged frames
-and records the verdict (ADR-013, `docs/Session_Detection.md`). The
+and records the verdict (ADR-013, `.claude/skills/review-frames/SKILL.md`). The
 `anthropic` package stays in `requirements.txt` only for `detector.mode: api`
 and its tests; nothing in the running system imports it.
 

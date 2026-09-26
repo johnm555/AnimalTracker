@@ -8,7 +8,7 @@ without requiring an Anthropic API key or Claude session — running entirely
 on the Mac Mini (Apple Silicon), free and open source.
 
 **Current system:** A scheduled Claude session views staged frames every
-30 minutes and returns a structured verdict (see `Session_Detection.md`).
+30 minutes and returns a structured verdict (see `.claude/skills/review-frames/SKILL.md`).
 This works but adds up to 30 minutes of detection latency and consumes
 Claude subscription usage. A local vision layer could either replace
 the Claude session entirely or serve as a fast pre-filter that skips
