@@ -193,3 +193,18 @@ Run `scripts/run.sh test` and `scripts/run.sh watch-test` before a pull request.
 Read [`CLAUDE.md`](CLAUDE.md) / [`AGENTS.md`](AGENTS.md) first — especially the one
 rule: **never hallucinate a location.** Code, API responses and notification text
 report only what cameras observed and the tracker derived.
+
+## License
+
+Animal Tracker is free software, licensed under the [GNU General Public License
+v3.0](LICENSE). You may use, study, change and share it; if you distribute a
+modified version, you must release its source under the same license.
+Contributions are accepted under the same terms.
+
+Copyright © 2026 John Marshall.
+
+Animal Tracker is an independent project, not affiliated with or endorsed by
+Ring, Amazon, Apple, Anthropic or OpenAI. It uses Ring through an unofficial
+community API and reads local Messages and Find My data on your own Mac; you
+are responsible for complying with those services' terms. It comes with no
+warranty — don't rely on it as the only way to keep an animal safe.
