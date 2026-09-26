@@ -162,7 +162,7 @@ def check_db(r: Report, settings: dict | None) -> None:
     # Stale copies left in the repo by older versions are a split-brain risk.
     stale = [p.name for p in (BACKEND / "winston.db", BACKEND / "tracker.db") if p.exists()]
     if stale:
-        r.add(WARN, "stale data in repo", f"backend/{', backend/'.join(stale)} exist but are no longer read",
+        r.add(WARN, "stale data in repo", f"backend/{', backend/'.join(stale)}: no longer read (data dir is used)",
               "delete them once you have confirmed the data dir copy is current")
 
 

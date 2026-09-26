@@ -15,10 +15,10 @@ cd "$ROOT"
 AGENT="${1:-claude}"
 export ANIMAL_TRACKER_DATA="${ANIMAL_TRACKER_DATA:-$HOME/Library/Application Support/AnimalTracker}"
 
-queue=$(.venv/bin/python scripts/train.py status --json | .venv/bin/python -c \
-  'import json,sys; s=json.load(sys.stdin); print(s.get("review_queue", 0))')
-audits=$(.venv/bin/python scripts/train.py status --json | .venv/bin/python -c \
-  'import json,sys; s=json.load(sys.stdin); print((s.get("audits") or {}).get("n", 0))')
+status=$(.venv/bin/python scripts/train.py status --json 2>/dev/null) || {
+  echo "$(date '+%F %T') train status failed — run scripts/run.sh doctor"; exit 1; }
+read -r queue audits < <(printf '%s' "$status" | .venv/bin/python -c \
+  'import json,sys; s=json.load(sys.stdin); print(s.get("review_queue", 0), (s.get("audits") or {}).get("n", 0))')
 if [ "$queue" = "0" ] && [ "${AUDIT_EVERY_RUN:-0}" != "1" ]; then
   echo "$(date '+%F %T') review queue empty (audits so far: $audits) — nothing to do"
   exit 0

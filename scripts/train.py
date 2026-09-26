@@ -49,7 +49,8 @@ def _q(con: sqlite3.Connection, sql: str, *args) -> int:
 def status(settings: dict) -> dict:
     db = Path(paths.db_path(settings))
     if not db.exists():
-        return {"error": f"no database at {db} yet — run the tracker first (scripts/run.sh api)"}
+        return {"error": f"no database at {db} yet — run the tracker first (scripts/run.sh api)",
+                "review_queue": 0}
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     since = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     s: dict = {}
@@ -185,7 +186,18 @@ def main(argv: list[str] | None = None) -> int:
     f = sub.add_parser("full")
     f.add_argument("--apply", action="store_true")
     args = ap.parse_args(argv)
-    settings = load_settings()
+    try:
+        settings = load_settings()
+    except FileNotFoundError:
+        if args.cmd == "status":
+            msg = {"error": f"no {paths.settings_path()} — run `scripts/run.sh setup` first", "review_queue": 0}
+            if args.json:
+                import json
+                print(json.dumps(msg))
+            else:
+                print(msg["error"])
+            return 0
+        raise SystemExit(f"no {paths.settings_path()} — run `scripts/run.sh setup` first")
 
     if args.cmd == "status":
         s = status(settings)
