@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -181,7 +181,12 @@ def test_trends_only_today_is_partial(client):
     assert body["averages_full_days"]["days"] == 4
 
 
-def test_trends_counts_todays_activity(client):
+def test_trends_counts_todays_activity(client, monkeypatch):
+    # Pin the clock to local midday: with the wall clock, "an hour ago" is
+    # yesterday for the first hour after midnight and "today" comes out empty.
+    noon = datetime.now().astimezone().replace(hour=12, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    monkeypatch.setitem(globals(), "T0", noon)
+    monkeypatch.setattr("src.api.utcnow", lambda: (noon + timedelta(minutes=10)).astimezone(timezone.utc))
     post(client, "backyard", 0, 0.95)
     post(client, "kitchen-door", 120, 0.95)
     post(client, "driveway", 300, 0.95)
