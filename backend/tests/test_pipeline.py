@@ -174,15 +174,15 @@ def test_healthz_and_device_registration(ctx, monkeypatch):
         assert h["notifications"] == {"backend": "log", "device_tokens": 0}
 
         token = "ab" * 32
-        r = c.post("/winston/devices", json={"token": token.upper(), "name": "John's watch"})
+        r = c.post("/tracker/devices", json={"token": token.upper(), "name": "John's watch"})
         assert r.status_code == 201 and r.json()["device_tokens"] == 1
-        c.post("/winston/devices", json={"token": token})  # idempotent
+        c.post("/tracker/devices", json={"token": token})  # idempotent
         assert ctx.db.list_device_tokens()[0]["token"] == token
         assert c.get("/healthz").json()["notifications"]["device_tokens"] == 1
 
-        assert c.post("/winston/devices", json={"token": "not-hex!"}).status_code == 422
-        assert c.delete(f"/winston/devices/{token}").status_code == 200
-        assert c.delete(f"/winston/devices/{token}").status_code == 404
+        assert c.post("/tracker/devices", json={"token": "not-hex!"}).status_code == 422
+        assert c.delete(f"/tracker/devices/{token}").status_code == 200
+        assert c.delete(f"/tracker/devices/{token}").status_code == 404
 
         # A live poller's status shows up verbatim.
         ctx.poller = SimpleNamespace(status=SimpleNamespace(
@@ -191,12 +191,12 @@ def test_healthz_and_device_registration(ctx, monkeypatch):
 
 
 def test_write_endpoints_require_bearer_token_when_configured(ctx, monkeypatch):
-    monkeypatch.setenv("WINSTON_API_TOKEN", "s3cret")
+    monkeypatch.setenv("ANIMAL_TRACKER_API_TOKEN", "s3cret")
     with TestClient(create_app(ctx)) as c:
         body = {"camera_id": "backyard", "winston_probability": 0.95}
-        assert c.post("/winston/observation", json=body).status_code == 401
-        assert c.post("/winston/observation", json=body, headers={"Authorization": "Bearer wrong"}).status_code == 401
-        assert c.post("/winston/observation", json=body, headers={"Authorization": "Bearer s3cret"}).status_code == 201
-        assert c.post("/winston/devices", json={"token": "ab" * 16}).status_code == 401
-        assert c.get("/winston/location").status_code == 200  # reads stay open
+        assert c.post("/tracker/observation", json=body).status_code == 401
+        assert c.post("/tracker/observation", json=body, headers={"Authorization": "Bearer wrong"}).status_code == 401
+        assert c.post("/tracker/observation", json=body, headers={"Authorization": "Bearer s3cret"}).status_code == 201
+        assert c.post("/tracker/devices", json={"token": "ab" * 16}).status_code == 401
+        assert c.get("/tracker/location").status_code == 200  # reads stay open
         assert c.get("/healthz").status_code == 200

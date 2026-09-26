@@ -1,6 +1,6 @@
 import Foundation
 
-/// One row of `transitions` as returned by `/winston/history` and `/winston/transitions`.
+/// One row of `transitions` as returned by `/tracker/history` and `/tracker/transitions`.
 public struct Transition: Codable, Identifiable, Equatable, Sendable {
     public var id: Int
     public var fromZone: String?

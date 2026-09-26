@@ -16,7 +16,7 @@ motion event under backend/staging/pending/. A scheduled Claude session runs:
     scripts/run.sh detect record <key> --verdict-file verdict.json
         Record one verdict (JSON in the DETECTION_SCHEMA shape). It goes
         through WinstonDetector.to_observation() (unchanged signal fusion) and
-        is ingested via POST /winston/observation on the running API, so the
+        is ingested via POST /tracker/observation on the running API, so the
         in-memory tracker, transitions and notifications all fire. Falls back
         to in-process ingest if the API is down. The event dir is archived.
 
@@ -89,6 +89,7 @@ from src.staging import (  # noqa: E402
     stamp_local,
 )
 from src.winston_detector import FusionWeights, load_reference_images  # noqa: E402
+from src.paths import env  # noqa: E402
 
 
 def _load_env() -> None:
@@ -113,7 +114,7 @@ class Recorder:
         self.settings = settings
         api = settings.get("api") or {}
         self.base = f"http://127.0.0.1:{int(api.get('port', 8420))}"
-        self.token = os.environ.get("WINSTON_API_TOKEN")
+        self.token = env("API_TOKEN")
         self._ctx: AppContext | None = None
         self._db: Database | None = None
         self.via = "api"
@@ -131,15 +132,15 @@ class Recorder:
             import httpx
 
             headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
-            r = httpx.post(f"{self.base}/winston/observation", json=obs.to_dict(), headers=headers, timeout=15.0)
+            r = httpx.post(f"{self.base}/tracker/observation", json=obs.to_dict(), headers=headers, timeout=15.0)
             if r.status_code == 401:
-                sys.exit("API rejected the observation: set WINSTON_API_TOKEN in .env (it must match the server)")
+                sys.exit("API rejected the observation: set ANIMAL_TRACKER_API_TOKEN in .env (it must match the server)")
             r.raise_for_status()
             return r.json()
         if self._ctx is None:
             print("API not running; ingesting in-process (its tracker will catch up on next start)", file=sys.stderr)
             self.via = "in-process"
-            os.environ.setdefault("WINSTON_PIPELINE", "0")
+            os.environ.setdefault("ANIMAL_TRACKER_PIPELINE", "0")
             self._ctx = AppContext.build(self.settings)
         return self._ctx.ingest(obs)
 

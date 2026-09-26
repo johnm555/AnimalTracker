@@ -13,6 +13,7 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 from src.api import load_settings
+from src.paths import env  # noqa: E402
 
 
 def main() -> int:
@@ -30,15 +31,15 @@ def main() -> int:
     args = parser.parse_args()
     port = load_settings().get("api", {}).get("port", 8420)
     base = (args.url or f"http://127.0.0.1:{port}").rstrip("/")
-    token = os.environ.get("WINSTON_API_TOKEN")
+    token = env("API_TOKEN")
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     try:
         with httpx.Client(base_url=base, headers=headers, timeout=15) as client:
             if args.command == "review":
-                response = client.post(f"/winston/observations/{args.observation_id}/reviews",
+                response = client.post(f"/tracker/observations/{args.observation_id}/reviews",
                                        json={"label": args.label, "reviewer": args.reviewer, "notes": args.notes})
             else:
-                response = client.get("/winston/quality", params={"hours": args.hours})
+                response = client.get("/tracker/quality", params={"hours": args.hours})
             response.raise_for_status()
             data = response.json()
     except httpx.HTTPStatusError as error:

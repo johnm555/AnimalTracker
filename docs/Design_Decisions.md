@@ -155,7 +155,7 @@ scheduled Claude Code session views them, answers the same verification
 question, and records the verdict with `scripts/run.sh detect record-batch`.
 The verdict is the same `DETECTION_SCHEMA` JSON the API path returns and
 goes through the unchanged `WinstonDetector.to_observation()` fusion, then
-`POST /winston/observation`. `detector.mode: api` keeps the original
+`POST /tracker/observation`. `detector.mode: api` keeps the original
 in-process model call for the day a key exists. Details: `scripts/detect_pending.py` and
 [the review-frames skill](../.claude/skills/review-frames/SKILL.md).
 
@@ -322,7 +322,7 @@ queryable afterwards. The evidence survived in the frames and in the reviewer's
 the system could answer.
 
 **Decision.** Store visiting animals in a separate `animal_sightings` table,
-served from `/animals` (outside the `/winston/` namespace), with four
+served from `/animals` (outside the `/tracker/` namespace), with four
 constraints:
 
 1. **It never touches `LocationTracker`.** The state machine encodes travel

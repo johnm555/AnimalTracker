@@ -500,11 +500,11 @@ def main(argv: list[str] | None = None) -> int:
         base = args.post.rstrip("/")
 
         headers = {}
-        if os.environ.get("WINSTON_API_TOKEN"):
-            headers["Authorization"] = f"Bearer {os.environ['WINSTON_API_TOKEN']}"
+        if paths.env("API_TOKEN"):
+            headers["Authorization"] = f"Bearer {paths.env('API_TOKEN')}"
 
         def sink(obs: Observation) -> dict[str, Any]:
-            r = httpx.post(f"{base}/winston/observation", json=obs.to_dict(), headers=headers, timeout=10.0)
+            r = httpx.post(f"{base}/tracker/observation", json=obs.to_dict(), headers=headers, timeout=10.0)
             r.raise_for_status()
             return r.json()
 

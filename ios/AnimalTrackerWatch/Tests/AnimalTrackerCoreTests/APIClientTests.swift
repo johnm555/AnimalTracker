@@ -38,7 +38,7 @@ private func ok(_ request: URLRequest, _ body: String) -> (HTTPURLResponse, Data
 struct APIClientTests {
     @Test func locationRequestAndDecode() async throws {
         StubURLProtocol.handler = { request in
-            #expect(request.url?.path == "/winston/location")
+            #expect(request.url?.path == "/tracker/location")
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
             return ok(request, #"{"state":"seen","zone":"backyard","zone_label":"backyard","confidence":0.9,"last_seen_at":"2026-09-20T15:00:00+00:00","minutes_ago":0.2,"as_of":"2026-09-20T15:00:12+00:00"}"#)
         }
@@ -49,7 +49,7 @@ struct APIClientTests {
 
     @Test func historyPassesHoursQuery() async throws {
         StubURLProtocol.handler = { request in
-            #expect(request.url?.path == "/winston/history")
+            #expect(request.url?.path == "/tracker/history")
             #expect(request.url?.query == "hours=6.0")
             return ok(request, #"{"since":"2026-09-20T09:00:00+00:00","hours":6,"count":0,"transitions":[]}"#)
         }
@@ -60,7 +60,7 @@ struct APIClientTests {
     @Test func registerDevicePostsTokenWithBearer() async throws {
         StubURLProtocol.handler = { request in
             #expect(request.httpMethod == "POST")
-            #expect(request.url?.path == "/winston/devices")
+            #expect(request.url?.path == "/tracker/devices")
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
             #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
             // URLProtocol sees the body as a stream; read it back.
@@ -83,7 +83,7 @@ struct APIClientTests {
     @Test func mutePostsDurationAndBearer() async throws {
         StubURLProtocol.handler = { request in
             #expect(request.httpMethod == "POST")
-            #expect(request.url?.path == "/winston/mute")
+            #expect(request.url?.path == "/tracker/mute")
             #expect(request.url?.query == "minutes=60")
             #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer secret")
             return ok(request, #"{"muted":true,"muted_until":"2026-09-21T22:00:00+00:00","scope":"all_devices","as_of":"2026-09-21T21:00:00+00:00"}"#)

@@ -72,7 +72,7 @@ def test_answers_file_writes_configs_then_doctor_reads_them(tmp_path, monkeypatc
 
     assert wizard.main(["--answers", str(answers)]) == 0
     assert (data / "config" / "cameras.yaml").is_file()
-    assert "WINSTON_API_TOKEN=" in (data / ".env").read_text()
+    assert "ANIMAL_TRACKER_API_TOKEN=" in (data / ".env").read_text()
     assert wizard.main(["--answers", str(answers)]) == 1  # refuses to overwrite
     assert wizard.main(["--answers", str(answers), "--force"]) == 0
     assert list((data / "config").glob("settings.yaml.bak-*"))

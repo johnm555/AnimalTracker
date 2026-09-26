@@ -1,6 +1,6 @@
 import Foundation
 
-/// Response of `GET /winston/stats`.
+/// Response of `GET /tracker/stats`.
 public struct Stats: Codable, Equatable, Sendable {
     public struct Window: Codable, Equatable, Sendable {
         public var since: Date
