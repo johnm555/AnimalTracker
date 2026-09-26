@@ -9,7 +9,6 @@ import pytest
 from src.api import AppContext
 from src.db import Database
 from src.notification import LogSender, NotificationPolicy, NotificationService, PolicyConfig
-from src.observation import utcnow
 from src.pipeline import PipelineSettings, Poller
 from src.ring_client import MotionEvent
 from src.staging import (
@@ -19,9 +18,11 @@ from src.staging import (
 from src.state_machine import LocationTracker, TrackerConfig
 from src.winston_detector import DETECTION_SCHEMA
 
-from tests.test_pipeline import FakeExtractor, FakeRing, event
+from tests.test_pipeline import T0, FakeExtractor, FakeRing, event
 
-T0 = (utcnow() - timedelta(minutes=10)).replace(microsecond=0)
+# Share test_pipeline's clock: `event()` stamps events from its T0. A second T0
+# computed at a different import time can land a second later, which put the
+# first event behind the poller cursor (flaky "1 == 2").
 
 WINSTON = {
     "animal_present": True, "is_winston_confidence": 0.95, "visual_similarity": 0.9,
