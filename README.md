@@ -125,7 +125,7 @@ scripts/run.sh test                       # backend tests
 scripts/run.sh watch-test                 # Swift AnimalTrackerCore tests
 ```
 
-No cameras yet? Name clips `backyard__2026-09-20T14-03-11Z.mp4`, put them in a
+No cameras yet? Name clips `yard-cam__2026-09-20T14-03-11Z.mp4`, put them in a
 folder, and replay them: `scripts/run.sh replay ./fixtures`.
 
 ## Notifications
