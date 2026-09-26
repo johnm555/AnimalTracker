@@ -12,6 +12,12 @@ has seen the animal, the answer is `unknown` or `last_seen(zone, N minutes ago)`
 No defaults, no "probably inside", no guesses. This applies to code, API
 responses, notification copy, and anything you write.
 
+## Where the plan lives
+
+Open work is tracked as GitHub issues (https://github.com/johnm555/AnimalTracker/issues,
+labels `area:*`). Work on a branch, open a PR that references the issue, and file new
+ideas as issues. Never push straight to `main`.
+
 ## Layout
 
 ```
