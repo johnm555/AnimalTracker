@@ -14,7 +14,7 @@ jobs:
     # identifying names never are.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Refuse committed site data
         run: |
           bad=$(git ls-files | grep -E '(^|/)(settings|cameras)\.yaml$|\.db(-wal|-shm)?$|ring_token|(^|/)\.env$|ring_(locations|cameras)\.json$|(^|/)secrets/|reference_images/.+\.(jpe?g|png|heic)$' \
@@ -37,8 +37,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Ruff
@@ -58,8 +58,8 @@ jobs:
   backend:
     runs-on: macos-15   # Apple Vision (pyobjc) is part of the stack
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -92,8 +92,8 @@ jobs:
       matrix:
         python: ["3.11", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
           cache: pip
@@ -107,7 +107,7 @@ jobs:
   watch-core:
     runs-on: macos-15   # Swift Testing needs Xcode 16+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: AnimalTrackerCore tests
         working-directory: ios/AnimalTrackerWatch
         run: swift test
