@@ -6,7 +6,7 @@ PyYAML>=6.0
 httpx[http2]>=0.27
 PyJWT[crypto]>=2.8
 opencv-python-headless>=4.9
-Pillow>=10.3
+Pillow>=12.3.0
 python-dotenv>=1.0
 ring-doorbell[listen]>=0.9.14   # [listen] = FCM push via RingEventListener
 pytest>=8.2
