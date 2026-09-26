@@ -51,6 +51,6 @@ jobs:
     runs-on: macos-15   # Swift Testing needs Xcode 16+
     steps:
       - uses: actions/checkout@v4
-      - name: WinstonCore tests
-        working-directory: ios/WinstonWatch
+      - name: AnimalTrackerCore tests
+        working-directory: ios/AnimalTrackerWatch
         run: swift test

@@ -1,0 +1,65 @@
+name: AnimalTrackerWatch
+options:
+  deploymentTarget:
+    watchOS: '10.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    DEVELOPMENT_TEAM: KBGYVG6F36
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: '1'
+packages:
+  AnimalTrackerCore:
+    path: .
+targets:
+  AnimalTrackerWatch:
+    type: application
+    platform: watchOS
+    sources: [App]
+    dependencies:
+      - package: AnimalTrackerCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.johnmarshall.winston-watchdog
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_WKApplication: YES
+        INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Animal Tracker
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: Connect to your Animal Tracker backend.
+    info:
+      path: Config/Watch-Info.plist
+      properties:
+        WKApplication: true
+        WKRunsIndependentlyOfCompanionApp: true
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    entitlements:
+      path: Config/Watch.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.johnmarshall.winston-watchdog]
+  AnimalTrackerComplication:
+    type: app-extension
+    platform: watchOS
+    sources: [Complication]
+    dependencies:
+      - package: AnimalTrackerCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.johnmarshall.winston-watchdog.complication
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: YES
+    info:
+      path: Config/Complication-Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Config/Complication.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.johnmarshall.winston-watchdog]
+schemes:
+  AnimalTrackerWatch:
+    build:
+      targets:
+        AnimalTrackerWatch: all

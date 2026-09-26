@@ -15,7 +15,7 @@
 #   scripts/run.sh doctor [--json]     Check the installation; prints how to fix each problem
 #   scripts/run.sh train <cmd>         Improve the local models: status | harvest | evaluate | calibrate | eval-set | full
 #   scripts/run.sh test                Run the backend test suite
-#   scripts/run.sh watch-test          Run the Swift WinstonCore tests (works without Xcode)
+#   scripts/run.sh watch-test          Run the Swift AnimalTrackerCore tests (works without Xcode)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -103,7 +103,7 @@ print('Session updated.')
   test)
     exec python -m pytest -q -p no:warnings ;;
   watch-test)
-    cd "$ROOT/ios/WinstonWatch"
+    cd "$ROOT/ios/AnimalTrackerWatch"
     if xcode-select -p 2>/dev/null | grep -q "Xcode.app"; then
       exec swift test
     fi

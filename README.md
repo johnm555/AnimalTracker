@@ -51,7 +51,7 @@ AnimalTracker/                                 # Framework code (this repo)
     backend/src/                               # Python backend
     backend/tests/                             # Hermetic test suite
     backend/config/*.example.yaml              # Config templates
-    ios/WinstonWatch/                          # watchOS + WinstonCore SwiftPM
+    ios/AnimalTrackerWatch/                          # watchOS + AnimalTrackerCore SwiftPM
     scripts/                                   # run.sh, setup.sh, install-launchd.sh
     docs/                                      # Design decisions, dependencies
 ```

@@ -35,7 +35,7 @@ backend/
   src/ring_client.py          ring_doorbell wrapper
   src/frame_extractor.py      MP4 â†’ JPEG frames
   tests/                      pytest; no network, no credentials needed
-ios/WinstonWatch/             Swift: WinstonCore (models, API client), watchOS app, WidgetKit
+ios/AnimalTrackerWatch/             Swift: AnimalTrackerCore (models, API client), watchOS app, WidgetKit
 scripts/run.sh                unified entry point for all commands
 docs/                         design decisions, dependency policy, research
 ```
@@ -49,7 +49,7 @@ scripts/run.sh doctor [--json]         # installation health check with fixes â€
 scripts/run.sh train status            # local-model training state + next steps (also harvest|evaluate|calibrate|eval-set|export|full)
 scripts/review_session.sh [claude|codex]   # one headless review session; install-launchd.sh review schedules it
 scripts/run.sh test                    # pytest
-scripts/run.sh watch-test              # Swift Testing for WinstonCore
+scripts/run.sh watch-test              # Swift Testing for AnimalTrackerCore
 scripts/run.sh api                     # API + Ring poller (the whole system)
 scripts/run.sh ring-login              # one-time Ring 2FA
 scripts/run.sh detect list --sheets    # session-mode: pending review queue

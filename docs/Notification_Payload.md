@@ -1,7 +1,7 @@
 # Notification Payload Contract
 
 Produced by `backend/src/notification.py::build_payload()`. Consumed by the
-watchOS app (`ios/WinstonWatch/Sources/WinstonCore/NotificationPayload.swift`)
+watchOS app (`ios/AnimalTrackerWatch/Sources/AnimalTrackerCore/NotificationPayload.swift`)
 and mirrored, minus `aps`, by Pushover. **Change both sides together.**
 
 ## Shape
