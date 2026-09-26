@@ -30,7 +30,7 @@ the precision of each band; the defaults here are what that script measured.
 Re-run it whenever the reference set changes.
 
 Cropping matters more than anything else here. A full 1024 px frame of the
-side deck embeds mostly as "the side deck", whether or not a dog is on it, so
+deck embeds mostly as "the deck", whether or not a dog is on it, so
 uncropped scores carry much less signal than cropped ones. When the P4-12
 gate supplies a box, this module embeds the animal; when it does not, the
 frame is scored whole and will usually land in REVIEW, which is the correct

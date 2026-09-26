@@ -18,7 +18,7 @@ It never answers "is this Winston". It answers "is there an animal here":
 
 PRESENT is reliable: not one false positive in 352 animal-free events.
 ABSENT is **not** reliable. 77 of the misses were confident Winston
-sightings, and 55 of those are the `side-deck` camera — Winston curled on
+sightings, and 55 of those are the `deck-cam` camera — the animal curled on
 his bed, seen through a high fisheye lens, often in night IR.
 `VNRecognizeAnimalsRequest` finds standing and walking dogs; it does not
 find a black dog lying still on a dark bed.

@@ -105,9 +105,9 @@ response = client.systemone(
         "dog_detected": True,
         "winston_similarity": 0.91,
         "size_estimate": "large_breed",
-        "camera_id": "outdoor-2",
+        "camera_id": "yard-cam",
         "seconds_since_last_sighting": 120,
-        "last_seen_zone": "side-deck",
+        "last_seen_zone": "deck-cam",
         "temporal_likelihood": 0.9,
         "ring_classification": "motion",
         "frame_quality": "good"

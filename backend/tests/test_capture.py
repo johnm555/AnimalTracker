@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from pathlib import Path
 from types import SimpleNamespace
 from src.capture import capture_event
 from src.db import Database

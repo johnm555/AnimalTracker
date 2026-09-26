@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   no-site-data:
-    # The framework is public; a property's configs, database, tokens and photos never are.
+    # The framework is public; a property's configs, database, tokens, photos and
+    # identifying names never are.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +20,40 @@ jobs:
           bad=$(git ls-files | grep -E '(^|/)(settings|cameras)\.yaml$|\.db(-wal|-shm)?$|ring_token|(^|/)\.env$|ring_(locations|cameras)\.json$|(^|/)secrets/|reference_images/.+\.(jpe?g|png|heic)$' \
                 | grep -vE '\.example\.yaml$|tests/fixtures/' || true)
           if [ -n "$bad" ]; then echo "Site data must live in the data dir, not the repo:"; echo "$bad"; exit 1; fi
+      - name: Refuse private terms
+        # One term per line in the PRIVATE_TERMS repository secret (names, places,
+        # camera names, device ids). Only file:line is printed, never the term or
+        # the line, because logs of a public repo are public. Secrets aren't
+        # available to pull requests from forks, so the check is skipped there.
+        env:
+          PRIVATE_TERMS: ${{ secrets.PRIVATE_TERMS }}
+        run: |
+          if [ -z "$PRIVATE_TERMS" ]; then echo "PRIVATE_TERMS not available; skipping"; exit 0; fi
+          printf '%s\n' "$PRIVATE_TERMS" | sed '/^[[:space:]]*$/d' > "$RUNNER_TEMP/terms"
+          hits=$(git ls-files -z | xargs -0 grep -nwiIF -f "$RUNNER_TEMP/terms" \
+                 | grep -v 'Copyright ©' | grep -v 'github\.com/johnm555/' | cut -d: -f1,2 || true)
+          if [ -n "$hits" ]; then echo "Private terms found at (terms not shown):"; echo "$hits"; exit 1; fi
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Ruff
+        run: pip install ruff==0.16.9 && ruff check backend scripts
+      - name: ShellCheck
+        run: shellcheck -S warning scripts/*.sh
+      - name: actionlint
+        run: |
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.12/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint -color
+      - name: Links in docs (relative links only)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress './**/*.md'
+          fail: true
 
   backend:
     runs-on: macos-15   # Apple Vision (pyobjc) is part of the stack
@@ -31,9 +66,11 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - name: Install
         run: pip install -r backend/requirements.txt
-      - name: Test
+      - name: Test (random order, coverage floor)
+        # pytest-randomly shuffles test order every run and prints the seed; rerun a
+        # failure locally with `-p randomly --randomly-seed=<seed>`.
         working-directory: backend
-        run: python -m pytest -q -p no:warnings
+        run: python -m pytest -q -p no:warnings --cov=src --cov-report=term --cov-fail-under=75
       - name: Wizard + doctor smoke test (temp data dir, no Ring, no service)
         run: |
           export ANIMAL_TRACKER_DATA="$RUNNER_TEMP/at-data"
@@ -47,6 +84,26 @@ jobs:
           python scripts/setup_wizard.py --answers "$RUNNER_TEMP/answers.json"
           python scripts/doctor.py --skip-service || true   # no photos / Ring token in CI: report only
 
+  python-compat:
+    # The docs promise Python 3.11+; the main job runs 3.12.
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install
+        run: pip install -r backend/requirements.txt
+      - name: Test
+        working-directory: backend
+        run: python -m pytest -q -p no:warnings
+
   watch-core:
     runs-on: macos-15   # Swift Testing needs Xcode 16+
     steps:
@@ -54,3 +111,8 @@ jobs:
       - name: AnimalTrackerCore tests
         working-directory: ios/AnimalTrackerWatch
         run: swift test
+      - name: Build the watch app and complication (unsigned, simulator)
+        working-directory: ios/AnimalTrackerWatch
+        run: |
+          xcodebuild build -project AnimalTrackerWatch.xcodeproj -scheme AnimalTrackerWatch \
+            -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet

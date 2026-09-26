@@ -73,11 +73,11 @@ struct APIClientTests {
             let json = try JSONSerialization.jsonObject(with: body) as? [String: Any]
             #expect(json?["token"] as? String == "abcdef0123456789abcdef0123456789")
             #expect(json?["platform"] as? String == "watchos")
-            #expect(json?["name"] as? String == "John's Watch")
+            #expect(json?["name"] as? String == "Test Watch")
             return (HTTPURLResponse(url: request.url!, statusCode: 201, httpVersion: nil, headerFields: nil)!,
                     Data(#"{"registered":true,"device_tokens":1}"#.utf8))
         }
-        try await makeClient().registerDevice(token: "abcdef0123456789abcdef0123456789", name: "John's Watch")
+        try await makeClient().registerDevice(token: "abcdef0123456789abcdef0123456789", name: "Test Watch")
     }
 
     @Test func mutePostsDurationAndBearer() async throws {

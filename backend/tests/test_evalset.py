@@ -15,7 +15,7 @@ from src.observation import Observation
 T = datetime(2026, 9, 24, 12, 0, 0, tzinfo=timezone.utc)
 
 
-def _obs(db: Database, *, event: str, device: str = "111", camera: str = "side-deck",
+def _obs(db: Database, *, event: str, device: str = "111", camera: str = "deck-cam",
          seconds: float = 0, detector: str = "session", conf: float | None = 0.9,
          animal: bool | None = True, **extra) -> int:
     return db.insert_observation(Observation(
@@ -83,21 +83,21 @@ def test_latest_session_revision_wins(db):
 
 def test_owner_review_beats_audit_beats_session(db):
     oid = _obs(db, event="e1", conf=0.5)                       # session: uncertain
-    db.insert_local_audit(staging_key="side-deck__e1", device_id="111", event_id="e1",
-                          camera_id="side-deck", event_at=T.isoformat(), local_outcome="review",
+    db.insert_local_audit(staging_key="deck-cam__e1", device_id="111", event_id="e1",
+                          camera_id="deck-cam", event_at=T.isoformat(), local_outcome="review",
                           local_score=0.3, reviewer_label="no_animal", reviewer="claude-session",
                           notes="saw nothing", observation_id=oid)
     (ev,) = evalset.collect_labels(db._conn)
     assert (ev.label, ev.label_source) == ("no_animal", "audit")
-    db.insert_observation_review(oid, "winston", "owner (John)", "that's him")
+    db.insert_observation_review(oid, "winston", "owner", "that's him")
     (ev,) = evalset.collect_labels(db._conn)
     assert (ev.label, ev.label_source) == ("winston", "owner")
 
 
 def test_audit_labels_a_local_decision(db):
     oid = _obs(db, event="e1", detector="local", conf=0.9)
-    db.insert_local_audit(staging_key="side-deck__e1", device_id="111", event_id="e1",
-                          camera_id="side-deck", event_at=T.isoformat(), local_outcome="winston",
+    db.insert_local_audit(staging_key="deck-cam__e1", device_id="111", event_id="e1",
+                          camera_id="deck-cam", event_at=T.isoformat(), local_outcome="winston",
                           local_score=0.5, reviewer_label="winston", reviewer="claude-session",
                           notes="collar visible", observation_id=oid)
     (ev,) = evalset.collect_labels(db._conn)
@@ -136,18 +136,18 @@ def test_build_freezes_frames_and_survives_archive_deletion(db, tmp_path):
     _obs(db, event=eid, conf=0.95)
     _obs(db, event=_test_event_id("z"), device="222", conf=0.95)   # no frames on disk
     archive, out = tmp_path / "archive", tmp_path / "evalset"
-    src = _archive(archive, "side-deck", eid)
+    src = _archive(archive, "deck-cam", eid)
 
     s = evalset.build(db._conn, archive, out, set())
     assert s["events"] == 1 and s["frames_unavailable"] == 1
     assert s["by_split"] == {"test": {"winston": 1}}
-    frozen = out / "frames" / f"side-deck__{eid}"
+    frozen = out / "frames" / f"deck-cam__{eid}"
     assert sorted(p.name for p in frozen.iterdir()) == [f"frame-{i}.jpg" for i in range(4)]
 
     for p in src.iterdir():                     # retention sweep
         p.unlink()
     src.rmdir()
-    db.insert_observation_review(1, "not_winston", "owner (John)", "a visiting dog")
+    db.insert_observation_review(1, "not_winston", "owner", "a visiting dog")
     s = evalset.build(db._conn, archive, out, set())
     (row,) = evalset.load_manifest(out).values()
     assert s["events"] == 1 and row["label"] == "not_winston" and row["label_source"] == "owner"
@@ -161,7 +161,7 @@ def test_dry_run_writes_nothing(db, tmp_path):
     eid = _test_event_id("e")
     _obs(db, event=eid)
     archive, out = tmp_path / "archive", tmp_path / "evalset"
-    _archive(archive, "side-deck", eid)
+    _archive(archive, "deck-cam", eid)
     s = evalset.build(db._conn, archive, out, set(), dry_run=True)
     assert s["events"] == 1 and not out.exists()
 

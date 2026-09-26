@@ -1,8 +1,7 @@
 """Visiting animals (P4-30): a record of its own, kept away from the tracker."""
 
-import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -23,7 +22,7 @@ def db(tmp_path):
     return Database(tmp_path / "t.db")
 
 
-def sighting(species="raccoon", camera="side-deck", hour=3, **kw):
+def sighting(species="raccoon", camera="deck-cam", hour=3, **kw):
     kw.setdefault("source", "session")
     return AnimalSighting(camera_id=camera, timestamp=datetime(2026, 9, 23, hour, 0, tzinfo=UTC),
                           species=species, **kw)
@@ -49,7 +48,7 @@ def test_an_unexpected_species_keeps_its_name_rather_than_becoming_unknown():
 
 
 def test_camera_id_is_normalized_like_everywhere_else():
-    assert sighting(camera="Side Deck").camera_id == "side-deck"
+    assert sighting(camera="Deck Cam").camera_id == "deck-cam"
 
 
 def test_source_must_be_a_person_not_a_model():
@@ -73,10 +72,10 @@ def test_confidence_is_bounded():
 
 def test_record_and_list(db):
     db.record_animal_sighting(sighting("Racoon", hour=3))
-    db.record_animal_sighting(sighting("cat", camera="deck-stairs", hour=5))
+    db.record_animal_sighting(sighting("cat", camera="garden-cam", hour=5))
     rows = db.list_animal_sightings()
     assert [r["species"] for r in rows] == ["cat", "raccoon"]        # newest first
-    assert rows[0]["camera_id"] == "deck-stairs"
+    assert rows[0]["camera_id"] == "garden-cam"
 
 
 def test_filter_by_species_and_window(db):
@@ -88,7 +87,7 @@ def test_filter_by_species_and_window(db):
 
 
 def test_one_sighting_per_observation_relabelling_updates(db):
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.02, animal_present=True))
     db.record_animal_sighting(sighting("cat", observation_id=oid))
     db.record_animal_sighting(sighting("raccoon", observation_id=oid, notes="looked again"))
@@ -108,11 +107,11 @@ def test_sightings_without_an_observation_are_not_deduplicated(db):
 # --------------------------------------------------------------------------- #
 
 def test_candidates_are_animals_that_were_not_winston(db):
-    winston = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    winston = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                                 winston_probability=0.91, animal_present=True))
-    visitor = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    visitor = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                                 winston_probability=0.02, animal_present=True))
-    empty = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    empty = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                               winston_probability=0.0, animal_present=False))
     ids = [c["observation_id"] for c in db.unlabelled_animal_observations(0.70)]
     assert visitor in ids
@@ -120,7 +119,7 @@ def test_candidates_are_animals_that_were_not_winston(db):
 
 
 def test_labelled_observations_leave_the_queue(db):
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.02, animal_present=True))
     assert [c["observation_id"] for c in db.unlabelled_animal_observations(0.70)] == [oid]
     db.record_animal_sighting(sighting("raccoon", observation_id=oid))
@@ -129,7 +128,7 @@ def test_labelled_observations_leave_the_queue(db):
 
 def test_candidates_carry_the_reviewers_not_winston_evidence(db):
     db.insert_observation(Observation(
-        camera_id="side-deck", timestamp=utcnow(), winston_probability=0.03, animal_present=True,
+        camera_id="deck-cam", timestamp=utcnow(), winston_probability=0.03, animal_present=True,
         extra={"mismatched_features": ["cat-sized", "cat body shape"]}))
     c = db.unlabelled_animal_observations(0.70)[0]
     assert c["mismatched_features"] == ["cat-sized", "cat body shape"]
@@ -137,7 +136,7 @@ def test_candidates_carry_the_reviewers_not_winston_evidence(db):
 
 def test_candidates_never_guess_a_species(db):
     db.insert_observation(Observation(
-        camera_id="side-deck", timestamp=utcnow(), winston_probability=0.03, animal_present=True,
+        camera_id="deck-cam", timestamp=utcnow(), winston_probability=0.03, animal_present=True,
         extra={"mismatched_features": ["cat-sized"]}))
     assert "species" not in db.unlabelled_animal_observations(0.70)[0]
 
@@ -147,15 +146,15 @@ def test_candidates_never_guess_a_species(db):
 # --------------------------------------------------------------------------- #
 
 def test_summary_groups_by_species_camera_and_hour():
-    rows = [{"species": "raccoon", "camera_id": "side-deck", "timestamp": "2026-09-23T03:10:00+00:00"},
-            {"species": "raccoon", "camera_id": "deck-stairs", "timestamp": "2026-09-23T03:40:00+00:00"},
-            {"species": "cat", "camera_id": "side-deck", "timestamp": "2026-09-22T19:00:00+00:00"}]
+    rows = [{"species": "raccoon", "camera_id": "deck-cam", "timestamp": "2026-09-23T03:10:00+00:00"},
+            {"species": "raccoon", "camera_id": "garden-cam", "timestamp": "2026-09-23T03:40:00+00:00"},
+            {"species": "cat", "camera_id": "deck-cam", "timestamp": "2026-09-22T19:00:00+00:00"}]
     s = summarize(rows)
     assert s["sightings"] == 3
     assert s["species"]["raccoon"]["sightings"] == 2
-    assert s["species"]["raccoon"]["cameras"] == ["deck-stairs", "side-deck"]
+    assert s["species"]["raccoon"]["cameras"] == ["deck-cam", "garden-cam"]
     assert s["species"]["raccoon"]["first"].startswith("2026-09-23T03:10")
-    assert s["by_camera"] == {"side-deck": 2, "deck-stairs": 1}
+    assert s["by_camera"] == {"deck-cam": 2, "garden-cam": 1}
     assert s["by_hour_utc"] == {3: 2, 19: 1}
 
 
@@ -189,7 +188,7 @@ def test_a_visitor_sighting_creates_no_observation_and_no_transition(db):
 
 
 def test_labelling_does_not_alter_the_observations_own_verdict(db):
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.02, animal_present=True))
     db.record_animal_sighting(sighting("raccoon", observation_id=oid))
     row = db._conn.execute("SELECT winston_probability, animal_present FROM observations WHERE id=?",
@@ -212,7 +211,7 @@ def run(fn, tmp_path, **kw):
 
 def test_cli_label_refuses_an_observation_with_no_animal(tmp_path, capsys):
     db = Database(tmp_path / "t.db")
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.0, animal_present=False))
     with pytest.raises(SystemExit) as e:
         run(cli.cmd_label, tmp_path, observation_id=oid, species="raccoon", source="session",
@@ -236,20 +235,20 @@ def test_cli_report_is_empty_without_inventing_anything(tmp_path, capsys):
 
 def test_cli_round_trip_label_then_report(tmp_path, capsys):
     db = Database(tmp_path / "t.db")
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.02, animal_present=True))
     run(cli.cmd_label, tmp_path, observation_id=oid, species="Racoon", source="session",
         confidence=0.9, notes="ringed tail")
     capsys.readouterr()
     run(cli.cmd_report, tmp_path, days=7, species=None, json=False)
     out = capsys.readouterr().out
-    assert "raccoon" in out and "side-deck" in out
+    assert "raccoon" in out and "deck-cam" in out
     assert "not individual animals" in out
 
 
 def test_cli_warns_when_a_species_is_outside_the_known_list(tmp_path, capsys):
     db = Database(tmp_path / "t.db")
-    oid = db.insert_observation(Observation(camera_id="side-deck", timestamp=utcnow(),
+    oid = db.insert_observation(Observation(camera_id="deck-cam", timestamp=utcnow(),
                                             winston_probability=0.02, animal_present=True))
     run(cli.cmd_label, tmp_path, observation_id=oid, species="mountain lion", source="owner",
         confidence=None, notes="")

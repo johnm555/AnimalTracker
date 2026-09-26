@@ -49,7 +49,7 @@ from .frame_extractor import FrameExtractor, FrameExtractorConfig
 from .observation import Observation, utcnow
 from .ring_client import FixtureRingClient, MotionEvent, RingClient
 from .dog_detector import DogGate, GateSettings
-from .local_detector import Decision, LocalDetector, LocalSettings
+from .local_detector import LocalDetector, LocalSettings
 from .local_pipeline import LocalPipeline, LocalPipelineSettings, Outcome
 from .staging import StagingDirs, stage_event
 from .storage import StorageSettings, log_report, run_cleanup

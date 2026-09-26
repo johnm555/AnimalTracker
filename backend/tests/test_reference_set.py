@@ -41,7 +41,6 @@ class FakeRow(dict):
 
 
 def fake_db(rows):
-    import json as _json
 
     class Cursor:
         def __init__(self, rows): self._rows = rows
@@ -58,9 +57,9 @@ def fake_db(rows):
 
 def test_local_pipeline_verdicts_are_excluded():
     rows = [
-        {"id": 1, "camera_id": "side-deck", "timestamp": "t", "winston_probability": 0.9,
+        {"id": 1, "camera_id": "deck-cam", "timestamp": "t", "winston_probability": 0.9,
          "extra": '{"detector": "local"}', "event_id": "e1", "device_id": "d"},
-        {"id": 2, "camera_id": "side-deck", "timestamp": "t", "winston_probability": 0.9,
+        {"id": 2, "camera_id": "deck-cam", "timestamp": "t", "winston_probability": 0.9,
          "extra": '{}', "event_id": "e2", "device_id": "d"},
     ]
     got = brs.eligible_events(fake_db(rows), 0.70)
@@ -69,7 +68,7 @@ def test_local_pipeline_verdicts_are_excluded():
 
 
 def test_an_owner_confirmation_is_eligible_even_if_the_pipeline_first_judged_it():
-    rows = [{"id": 1, "camera_id": "wired-sr-2", "timestamp": "t", "winston_probability": 0.95,
+    rows = [{"id": 1, "camera_id": "doorbell", "timestamp": "t", "winston_probability": 0.95,
              "extra": '{"detector": "local", "owner_confirmation": {"label": "winston"}}',
              "event_id": "e1", "device_id": "d"}]
     got = brs.eligible_events(fake_db(rows), 0.70)
@@ -114,46 +113,46 @@ def cand(cam, light, ev, score=0.5, prob=0.8, holdout=False, localised=True):
 
 
 def test_holdout_frames_never_enter_the_gallery():
-    pool = [cand("side-deck", "day", f"e{i}", holdout=(i % 2 == 0)) for i in range(10)]
+    pool = [cand("deck-cam", "day", f"e{i}", holdout=(i % 2 == 0)) for i in range(10)]
     chosen = brs.select(pool, 10)
     assert all(not c["holdout"] for c in chosen)
 
 
 def test_unlocalised_frames_are_not_gallery_material():
-    pool = [cand("side-deck", "day", "e1", localised=False),
-            cand("side-deck", "day", "e2", localised=True)]
+    pool = [cand("deck-cam", "day", "e1", localised=False),
+            cand("deck-cam", "day", "e2", localised=True)]
     assert [c["event_id"] for c in brs.select(pool, 5)] == ["e2"]
 
 
 def test_one_frame_per_event():
     """Four frames of a single moment is redundancy, not variety."""
-    pool = [cand("side-deck", "day", "same", score=0.9 - i * 0.01) for i in range(4)]
+    pool = [cand("deck-cam", "day", "same", score=0.9 - i * 0.01) for i in range(4)]
     assert len(brs.select(pool, 4)) == 1
 
 
 def test_a_prolific_camera_cannot_crowd_out_the_others():
-    pool = [cand("side-deck", "day", f"s{i}", score=0.99) for i in range(40)]
-    pool += [cand("deck-stairs", "day", "d1", score=0.2)]
-    pool += [cand("outdoor-2", "day", "o1", score=0.2)]
+    pool = [cand("deck-cam", "day", f"s{i}", score=0.99) for i in range(40)]
+    pool += [cand("garden-cam", "day", "d1", score=0.2)]
+    pool += [cand("yard-cam", "day", "o1", score=0.2)]
     chosen = brs.select(pool, 6)
     cams = {c["camera_id"] for c in chosen}
-    assert "deck-stairs" in cams and "outdoor-2" in cams
+    assert "garden-cam" in cams and "yard-cam" in cams
 
 
 def test_each_cameras_most_confident_frame_is_included():
-    pool = [cand("side-deck", "day", "low", score=0.99, prob=0.72),
-            cand("side-deck", "day", "best", score=0.10, prob=0.96)]
+    pool = [cand("deck-cam", "day", "low", score=0.99, prob=0.72),
+            cand("deck-cam", "day", "best", score=0.10, prob=0.96)]
     assert "best" in {c["event_id"] for c in brs.select(pool, 2)}
 
 
 def test_ir_and_day_are_separate_buckets():
-    pool = [cand("side-deck", "day", f"d{i}", score=0.9) for i in range(10)]
-    pool += [cand("side-deck", "ir", "ir1", score=0.1)]
+    pool = [cand("deck-cam", "day", f"d{i}", score=0.9) for i in range(10)]
+    pool += [cand("deck-cam", "ir", "ir1", score=0.1)]
     assert "ir1" in {c["event_id"] for c in brs.select(pool, 4)}
 
 
 def test_selection_stops_at_the_target():
-    pool = [cand("side-deck", "day", f"e{i}") for i in range(50)]
+    pool = [cand("deck-cam", "day", f"e{i}") for i in range(50)]
     assert len(brs.select(pool, 12)) == 12
 
 

@@ -42,9 +42,7 @@ sources. It is generated from `project.yml` with `xcodegen generate`.
 Both targets successfully built for the watchOS Simulator on 2026-09-20 using
 Xcode-beta. This is a compile check, not a paired-device or APNs delivery test.
 Open the project, choose your signing team, and select a Watch destination.
-Signing: team `KBGYVG6F36` (John Marshall), automatic signing, bundle ids
-`com.johnmarshall.winstontracker` / `.complication`, App Group
-`group.com.johnmarshall.winstontracker` — all set in `project.yml`; regenerate
+Signing: set `DEVELOPMENT_TEAM`, the bundle ids and the App Group in `project.yml` to your own, then regenerate
 with `xcodegen generate` after editing it. Xcode must be signed in to that
 AppleID for automatic provisioning to register the App Group and APNs. The backend listens on `0.0.0.0:8420`;
 enter `http://<mac-mini-lan-ip>:8420` (and the `ANIMAL_TRACKER_API_TOKEN`, if set) in

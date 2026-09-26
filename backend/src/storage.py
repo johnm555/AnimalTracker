@@ -33,7 +33,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from .observation import parse_timestamp, utcnow
+from .observation import parse_timestamp
 from .paths import data_dir, staging_dir as default_staging_dir, ring_downloads_dir as default_downloads_dir
 
 log = logging.getLogger(__name__)

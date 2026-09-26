@@ -3,14 +3,13 @@
 from __future__ import annotations
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
-from src.api import load_settings
+from src.api import load_settings  # noqa: E402
 from src.paths import env  # noqa: E402
 
 

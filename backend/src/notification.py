@@ -444,7 +444,6 @@ class IMessageSender:
 
         settled_zone = zones[-1]
         confidence = steps[-1][0].confidence
-        arrived = steps[-1][0].arrived_at
 
         if len(zones) <= 2:
             # Simple A → B move.
