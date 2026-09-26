@@ -10,7 +10,6 @@ from src.api import AppContext
 from src.db import Database
 from src.notification import LogSender, NotificationPolicy, NotificationService, PolicyConfig
 from src.pipeline import PipelineSettings, Poller
-from src.ring_client import MotionEvent
 from src.staging import (
     StagingDirs, archive_event, find_archived, find_pending, list_archived, list_pending, record_verdict,
     requeue_event, skip_event, verdict_to_observation,

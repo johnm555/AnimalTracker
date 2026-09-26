@@ -8,7 +8,7 @@ from src.ring_client import RingClient, MotionEvent
 
 
 def event():
-    return MotionEvent("123", "outdoor-winston", "42", datetime.now(timezone.utc))
+    return MotionEvent("123", "living-room-cam", "42", datetime.now(timezone.utc))
 
 
 def test_playback_fallback_after_direct_failure(tmp_path, monkeypatch):

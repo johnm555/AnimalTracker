@@ -59,7 +59,7 @@ import numpy as np  # noqa: E402
 
 from src.api import load_settings  # noqa: E402
 from src.db import Database  # noqa: E402
-from src.dog_detector import DogGate, GateResult, GateSettings  # noqa: E402
+from src.dog_detector import DogGate, GateSettings  # noqa: E402
 from src.pipeline import reference_dir, staging_dirs  # noqa: E402
 
 #: Fraction of eligible events held out of the gallery for evaluation.

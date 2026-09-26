@@ -52,3 +52,8 @@ backend/staging/gallery.pt
 # Agent tooling: share skills, keep local agent state private
 .claude/*
 !.claude/skills/
+
+# Test artifacts
+.coverage
+.coverage.*
+htmlcov/

@@ -25,7 +25,6 @@ without polling (tests, replay, a second read-only instance).
 from __future__ import annotations
 
 import logging
-import os
 import threading
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta, timezone

@@ -21,7 +21,7 @@ import detect_pending as cli
 # --------------------------------------------------------------------------- #
 
 def archive(dirs: StagingDirs, key: str, outcome: str, score: float,
-            camera: str = "side-deck", age_hours: float = 1.0,
+            camera: str = "deck-cam", age_hours: float = 1.0,
             observation_id: int | None = None, frames: int = 2) -> Path:
     ts = utcnow() - timedelta(hours=age_hours)
     d = dirs.archive / ts.strftime("%Y-%m-%d") / key
@@ -33,7 +33,7 @@ def archive(dirs: StagingDirs, key: str, outcome: str, score: float,
     if observation_id:
         local["observation_id"] = observation_id
     (d / "event.json").write_text(json.dumps({
-        "event_id": f"ev-{key}", "device_id": "705162916", "camera_id": camera,
+        "event_id": f"ev-{key}", "device_id": "100000001", "camera_id": camera,
         "timestamp": ts.isoformat(), "frames": [f"frame-{i}.jpg" for i in range(frames)],
         "outcome": f"analyzed: local {outcome}", "local": local}))
     return d
@@ -78,7 +78,7 @@ def test_decisions_carry_the_score_and_the_observation(dirs):
     d = archived_local_decisions(dirs)[0]
     assert d["local_outcome"] == "winston" and d["local_score"] == 0.42
     assert d["observation_id"] == 7 and len(d["frames"]) == 2
-    assert d["camera_id"] == "side-deck"
+    assert d["camera_id"] == "deck-cam"
 
 
 def test_since_filters_by_event_time(dirs):
@@ -177,7 +177,7 @@ def test_summary_reports_rates_per_outcome_and_names_the_disagreements(db):
         db.insert_local_audit(staging_key=f"w{i}", device_id="d", event_id="e", camera_id="deck",
                               event_at=utcnow().isoformat(), local_outcome="winston",
                               local_score=0.5, reviewer_label="winston", reviewer="s", notes="n")
-    db.insert_local_audit(staging_key="m", device_id="d", event_id="e", camera_id="deck-stairs",
+    db.insert_local_audit(staging_key="m", device_id="d", event_id="e", camera_id="garden-cam",
                           event_at=utcnow().isoformat(), local_outcome="no_animal",
                           local_score=0.21, reviewer_label="winston", reviewer="s",
                           notes="he is asleep on the bed")
@@ -275,7 +275,7 @@ def test_audit_lists_the_sample_without_recording_anything(tmp_path, dirs, capsy
 # owner ground truth
 # --------------------------------------------------------------------------- #
 
-def observation(db, prob=0.75, camera="wired-sr-2"):
+def observation(db, prob=0.75, camera="doorbell"):
     from src.observation import Observation
     return db.insert_observation(Observation(
         camera_id=camera, timestamp=utcnow(), winston_probability=prob,
@@ -285,7 +285,7 @@ def observation(db, prob=0.75, camera="wired-sr-2"):
 
 def test_confirmation_lifts_the_probability_above_the_strong_threshold(db):
     oid = observation(db, 0.75)
-    r = db.apply_owner_confirmation(oid, "winston", "owner (John)", "it is him")
+    r = db.apply_owner_confirmation(oid, "winston", "owner", "it is him")
     assert r["was"] == 0.75 and r["winston_probability"] == 0.95
     row = db._conn.execute("SELECT winston_probability FROM observations WHERE id=?", (oid,)).fetchone()
     assert row["winston_probability"] == 0.95          # > strong_threshold 0.90, confirms alone

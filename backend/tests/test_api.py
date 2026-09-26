@@ -52,7 +52,7 @@ def test_observation_flow_and_notifications(client):
     r3 = post(client, "front-door", 12, 0.99)  # implausible
     assert r3["accepted"] is False and "implausible" in r3["rejection_reason"]
 
-    r4 = post(client, "side-yard", 40, 0.95)
+    post(client, "side-yard", 40, 0.95)
     r5 = post(client, "driveway", 70, 0.95)
     assert r5["transition"]["from_zone"] == "side-yard"
     assert r5["notification"]["type"] == "high_priority"
@@ -213,7 +213,7 @@ def test_trends_defaults_to_a_week(client):
 # --------------------------------------------------------------------------- #
 
 def test_imessage_sender_high_priority_sends_immediately(monkeypatch):
-    from src.notification import IMessageSender, NotificationDecision, HIGH_PRIORITY, SILENT, NORMAL
+    from src.notification import IMessageSender, NotificationDecision, HIGH_PRIORITY, SILENT
     from src.state_machine import TransitionEvent
     from src.notification import build_payload
 
@@ -231,15 +231,15 @@ def test_imessage_sender_high_priority_sends_immediately(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
 
     # High-priority sends immediately
-    event = TransitionEvent(id=1, from_zone="backyard", to_zone="lower-boundary",
+    event = TransitionEvent(id=1, from_zone="backyard", to_zone="exit-door",
                             arrived_at=T0, confidence=0.95)
-    decision = NotificationDecision(HIGH_PRIORITY, "Winston at lower boundary",
+    decision = NotificationDecision(HIGH_PRIORITY, "Max at the exit door",
                                      "Moved to street-adjacent zone.")
     payload = build_payload(event, decision)
     sender.send(payload, decision)
     assert len(calls) == 1
     assert "osascript" in calls[0][0]
-    assert "Winston" in calls[0][2]
+    assert "Max at the exit door" in calls[0][2]
 
     # Silent decisions should not send
     calls.clear()
@@ -266,13 +266,13 @@ def test_imessage_sender_buffers_normal_transitions(monkeypatch):
     monkeypatch.setattr(subprocess, "run", fake_run)
 
     # Normal transition should be buffered, not sent immediately
-    e1 = TransitionEvent(id=1, from_zone="backyard", to_zone="side-deck",
+    e1 = TransitionEvent(id=1, from_zone="backyard", to_zone="deck-cam",
                          arrived_at=T0, confidence=0.9)
-    d1 = NotificationDecision(NORMAL, "Winston → side deck", "Moved.")
+    d1 = NotificationDecision(NORMAL, "Max → deck cam", "Moved.")
     sender.send(build_payload(e1, d1), d1)
     assert len(calls) == 0  # buffered, not sent
 
-    e2 = TransitionEvent(id=2, from_zone="side-deck", to_zone="middle-dog-room",
+    e2 = TransitionEvent(id=2, from_zone="deck-cam", to_zone="living-room",
                          arrived_at=T0 + timedelta(seconds=60), confidence=0.9)
     d2 = NotificationDecision(NORMAL, "Winston → dog room", "Moved.")
     sender.send(build_payload(e2, d2), d2)
@@ -283,8 +283,8 @@ def test_imessage_sender_buffers_normal_transitions(monkeypatch):
     _time.sleep(0.3)
     assert len(calls) == 1  # journey summary sent
     assert "settled" in calls[0][2].lower()
-    assert "side deck" in calls[0][2]
-    assert "middle dog room" in calls[0][2]
+    assert "deck cam" in calls[0][2]
+    assert "living room" in calls[0][2]
 
 
 def test_imessage_sender_on_off(monkeypatch):
@@ -317,8 +317,8 @@ def test_imessage_sender_on_off(monkeypatch):
 
 def test_imessage_sender_from_settings():
     from src.notification import IMessageSender
-    sender = IMessageSender.from_settings({"recipient": "john@example.com", "settle_seconds": 120})
-    assert sender.recipient == "john@example.com"
+    sender = IMessageSender.from_settings({"recipient": "owner@example.com", "settle_seconds": 120})
+    assert sender.recipient == "owner@example.com"
     assert sender.settle_seconds == 120.0
 
 

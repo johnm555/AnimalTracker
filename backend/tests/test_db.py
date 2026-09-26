@@ -111,9 +111,9 @@ def test_transaction_rolls_back_on_error(db):
 
 def test_calibration_uses_latest_revision_not_highest_probability(db):
     identity = {"ring_device_id": "5000-a", "ring_event_id": "event-1"}
-    old = Observation("winston-5000", T0, 0.99, extra=identity)
+    old = Observation("kitchen-cam", T0, 0.99, extra=identity)
     db.insert_observation(old)
-    new = Observation("winston-5000", T0, 0.1,
+    new = Observation("kitchen-cam", T0, 0.1,
                       extra={**identity, "superseded_observation_id": old.id, "requeued_at": T0.isoformat()})
     db.insert_observation(new)
     assert [o.id for o in db.iter_calibration_observations()] == [new.id]
@@ -131,7 +131,7 @@ def test_calibration_keeps_distinct_devices_and_missing_identities(db):
         {"ring_device_id": "", "ring_event_id": "same"},
     ]
     for identity in identities:
-        db.insert_observation(Observation("winston-5000", T0, 0.8, extra=identity))
+        db.insert_observation(Observation("kitchen-cam", T0, 0.8, extra=identity))
     assert len(list(db.iter_calibration_observations())) == len(identities)
 
 
