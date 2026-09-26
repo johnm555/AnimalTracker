@@ -158,7 +158,7 @@ and will change together with the watch app.
 
 ```json
 GET /winston/location
-{"state": "seen", "zone": "backyard", "confidence": 0.93,
+{"state": "seen", "zone": "yard", "confidence": 0.93,
  "last_seen_at": "2026-09-20T15:02:11+00:00", "minutes_ago": 0.7}
 ```
 
@@ -172,8 +172,8 @@ Thresholds live in the data-dir `settings.yaml`, not in code:
 - `notifications.cooldown_seconds`, `quiet_hours`, `high_priority_zones`.
 - `detector.pipeline.*` — local-model bands; fit them with `scripts/run.sh train calibrate`.
 
-Every rejected observation is logged with a reason (`implausible: backyard -> front
-in 4s (minimum 18s)`), the fastest way to tune travel windows.
+Every rejected observation is logged with a reason (`implausible: kitchen -> yard
+in 5s (minimum 18s)`), the fastest way to tune travel windows.
 
 ## Layout
 
