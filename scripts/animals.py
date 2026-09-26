@@ -3,7 +3,7 @@
 
     scripts/run.sh animals report [--days 7]        what has been visiting
     scripts/run.sh animals candidates               non-Winston animals awaiting a species
-    scripts/run.sh animals record --species raccoon --camera side-deck --at <iso>
+    scripts/run.sh animals record --species raccoon --camera deck-cam --at <iso>
     scripts/run.sh animals label <observation_id> --species raccoon
 
 `label` is the normal path: an observation already says an animal was there and

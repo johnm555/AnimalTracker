@@ -1,6 +1,5 @@
 """Local animal gate (P4-12): one-sided by construction, never drops a sighting."""
 
-from types import SimpleNamespace
 
 import pytest
 

@@ -10,7 +10,7 @@ Inspect the event frames alongside enrolled reference photos first. Use the
 observation ID from the detection result or `detect calibration` export:
 
 ```sh
-scripts/run.sh quality review 123 --label winston --reviewer john --notes "Visible head, ears and body match enrolled references."
+scripts/run.sh quality review 123 --label winston --reviewer owner --notes "Visible head, ears and body match enrolled references."
 scripts/run.sh quality report --hours 24
 scripts/run.sh quality report --hours 168 --json
 ```

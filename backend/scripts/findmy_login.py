@@ -35,7 +35,7 @@ def main() -> None:
 
     if state == LoginState.REQUIRE_2FA:
         methods = acc.get_2fa_methods()
-        print(f"\n2FA required. Available methods:")
+        print("\n2FA required. Available methods:")
         for i, m in enumerate(methods):
             print(f"  [{i}] {m}")
 

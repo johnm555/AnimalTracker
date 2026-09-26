@@ -1,0 +1,8 @@
+# Lint config for CI (`ruff check`). Deliberately small: real errors and dead code,
+# not style. The codebase uses `a; b` one-liners and a few named lambdas on purpose.
+target-version = "py311"
+extend-exclude = ["ios"]
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E702", "E731"]

@@ -312,9 +312,9 @@ see.
 
 **Status:** accepted, 2026-09-23.
 
-**Context.** Owner request: the property gets visitors — a raccoon was confirmed
-on the side deck on 2026-09-23, a cat earlier the same day — and John wants to
-know what comes by and when. Until now a non-target animal was a dead end.
+**Context.** Owner request: the property gets visitors — a raccoon and a cat
+were confirmed on the same day — and the owner wants to know what comes by and
+when. Until now a non-target animal was a dead end.
 `LocalPipeline` routed it to REVIEW, a session recorded a low
 `is_winston_confidence`, the tracker dropped it below threshold, and nothing was
 queryable afterwards. The evidence survived in the frames and in the reviewer's

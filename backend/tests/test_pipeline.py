@@ -174,7 +174,7 @@ def test_healthz_and_device_registration(ctx, monkeypatch):
         assert h["notifications"] == {"backend": "log", "device_tokens": 0}
 
         token = "ab" * 32
-        r = c.post("/tracker/devices", json={"token": token.upper(), "name": "John's watch"})
+        r = c.post("/tracker/devices", json={"token": token.upper(), "name": "Test watch"})
         assert r.status_code == 201 and r.json()["device_tokens"] == 1
         c.post("/tracker/devices", json={"token": token})  # idempotent
         assert ctx.db.list_device_tokens()[0]["token"] == token
