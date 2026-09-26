@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  no-site-data:
+    # The framework is public; a property's configs, database, tokens and photos never are.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse committed site data
+        run: |
+          bad=$(git ls-files | grep -E '(^|/)(settings|cameras)\.yaml$|\.db(-wal|-shm)?$|ring_token|(^|/)\.env$|ring_(locations|cameras)\.json$|(^|/)secrets/|reference_images/.+\.(jpe?g|png|heic)$' \
+                | grep -vE '\.example\.yaml$|tests/fixtures/' || true)
+          if [ -n "$bad" ]; then echo "Site data must live in the data dir, not the repo:"; echo "$bad"; exit 1; fi
+
+  backend:
+    runs-on: macos-15   # Apple Vision (pyobjc) is part of the stack
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install
+        run: pip install -r backend/requirements.txt
+      - name: Test
+        working-directory: backend
+        run: python -m pytest -q -p no:warnings
+      - name: Wizard + doctor smoke test (temp data dir, no Ring, no service)
+        run: |
+          export ANIMAL_TRACKER_DATA="$RUNNER_TEMP/at-data"
+          cat > "$RUNNER_TEMP/answers.json" <<'JSON'
+          {"animal": {"name": "Max"},
+           "cameras": [{"device_id": "1", "name": "Back Door", "zone": "kitchen"},
+                       {"device_id": "2", "name": "Yard", "zone": "backyard"}],
+           "neighbors": [{"a": "kitchen", "b": "backyard", "max_seconds": 60}],
+           "high_priority_zones": ["backyard"], "notifications": {"backend": "log"}}
+          JSON
+          python scripts/setup_wizard.py --answers "$RUNNER_TEMP/answers.json"
+          python scripts/doctor.py --skip-service || true   # no photos / Ring token in CI: report only
+
+  watch-core:
+    runs-on: macos-15   # Swift Testing needs Xcode 16+
+    steps:
+      - uses: actions/checkout@v4
+      - name: WinstonCore tests
+        working-directory: ios/WinstonWatch
+        run: swift test

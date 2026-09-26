@@ -20,34 +20,21 @@ from the backyard to the driveway, 40 seconds ago, 92% sure."
 ## Quick start
 
 ```bash
-# 1. Clone and set up
 git clone https://github.com/johnm555/AnimalTracker.git
 cd AnimalTracker
-scripts/setup.sh
-
-# 2. Configure your property
-DATA_DIR=~/Library/Application\ Support/AnimalTracker
-mkdir -p "$DATA_DIR/config" "$DATA_DIR/reference_images"
-cp backend/config/settings.example.yaml "$DATA_DIR/config/settings.yaml"
-cp backend/config/cameras.example.yaml "$DATA_DIR/config/cameras.yaml"
-# Edit both files for your property layout and Ring device IDs
-
-# 3. Add reference photos of your animal
-# Place 6+ photos in $DATA_DIR/reference_images/
-
-# 4. Create .env with Ring credentials
-cat > "$DATA_DIR/.env" << 'EOF'
-RING_USERNAME=your@email.com
-RING_PASSWORD=your-ring-password
-WINSTON_API_TOKEN=$(python3 -c 'import secrets; print(secrets.token_hex(24))')
-EOF
-
-# 5. Ring login (one-time 2FA)
-scripts/run.sh ring-login
-
-# 6. Start the system
-scripts/run.sh api
+scripts/setup.sh                        # Python env, dependencies, tests
+scripts/run.sh setup                    # Ring login, cameras → zones, notifications
+# add 6+ photos of your animal to ~/Library/Application Support/AnimalTracker/reference_images/
+scripts/run.sh doctor                   # checks everything, prints fixes
+scripts/install-launchd.sh install      # run at login, restart on crash
+scripts/install-launchd.sh review claude   # optional: your AI subscription reviews what local models can't
 ```
+
+Using Claude Code? Open the repo and say **"set up my property"**. Skills in
+`.claude/skills/` cover setup, notifications, reviewing frames, training the
+local models and troubleshooting.
+
+Guides: [Setup](docs/Setup_Guide.md) · [Training the local models](docs/Training_Guide.md)
 
 ## Architecture
 
