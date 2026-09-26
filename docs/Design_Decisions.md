@@ -8,12 +8,12 @@ update the record rather than silently diverging.
 ## ADR-001 — The vision model produces observations, never locations
 
 **Decision.** `winston_detector.py` answers one question per event: *is the
-animal in these frames Winston, the enrolled Great Dane in the reference
+animal in these frames the enrolled animal in the reference
 photos?* It returns an `Observation` bound to a camera. It has no concept of
-zones and is never told where Winston was last seen in words.
+zones and is never told where the animal was last seen in words.
 
-**Why.** A language model asked "where is Winston?" will happily answer even
-when no camera has seen him. Splitting perception (probabilistic, model-based)
+**Why.** A language model asked "where is the animal?" will happily answer even
+when no camera has seen it. Splitting perception (probabilistic, model-based)
 from tracking (deterministic, code-based) means every location claim can be
 traced to a specific camera at a specific time, and the model's failure mode
 is a wrong *probability*, not a fabricated *place*.
@@ -29,7 +29,7 @@ the same sequence of observations it always yields the same transitions.
 
 **Why.** Debuggability and trust. When the watch says "driveway" you can
 replay the observations and see exactly which rule fired. Physical
-plausibility (a Great Dane can't get from the house to the front door in
+plausibility (a large dog can't get from the house to the front door in
 10 s) is a far stronger signal than anything a vision model can offer for
 rejecting look-alike dogs.
 
@@ -39,7 +39,7 @@ carries a reason string. New rules require a test first.
 ## ADR-003 — Verification prompt, not classification
 
 **Decision.** The prompt explicitly says: "Determine whether the animal
-visible in these frames is Winston, the enrolled Great Dane shown in the
+visible in these frames is the enrolled animal shown in the
 reference images. Do not perform generic animal classification."
 
 **Why.** Generic "is this a dog?" is near-useless in a neighborhood with
@@ -68,8 +68,8 @@ the two, a second sighting in the same candidate zone within
 TRANSITIONING(from, to).
 
 **Why.** Single mid-confidence frames are the main false-positive source
-(neighbor's dog, shadows). Winston moving through a zone almost always
-triggers ≥2 events. TRANSITIONING is an honest description of "we think he
+(neighbor's dog, shadows). The animal moving through a zone almost always
+triggers ≥2 events. TRANSITIONING is an honest description of "we think it
 moved, not sure yet" instead of flipping state back and forth.
 
 ## ADR-006 — Debounce in the tracker, cooldown in the notifier
@@ -167,7 +167,7 @@ nothing per event beyond the subscription. It also gives a free
 human-reviewable archive of every frame set with its verdict.
 
 **Consequences.** Detection latency is the schedule interval (30 min) plus
-polling, not seconds; acceptable for zone tracking, not for "he's at the
+polling, not seconds; acceptable for zone tracking, not for "it's at the
 gate right now". The session must obey the same rules as the model
 (verification, not classification; `skip` for unusable frames; never a
 location). ADR-011's model choice and the API request shape remain valid
@@ -223,7 +223,7 @@ Carry requeue provenance into new observation metadata. No schema migration.
 references in existing transitions and change restart behavior relative to the
 running tracker. Counting every revision would bias threshold calibration.
 Event identity handles existing duplicates and multi-revision chains, including
-the two cameras that share the Winston 5000 name. Latest means newest verdict,
+two cameras that share one name. Latest means newest verdict,
 not highest confidence. Failed reviews and skips cannot erase prior evidence.
 
 **Limits.** This does not correct historical transitions or retract alerts.
@@ -314,7 +314,7 @@ see.
 
 **Context.** Owner request: the property gets visitors — a raccoon was confirmed
 on the side deck on 2026-09-23, a cat earlier the same day — and John wants to
-know what comes by and when. Until now a non-Winston animal was a dead end.
+know what comes by and when. Until now a non-target animal was a dead end.
 `LocalPipeline` routed it to REVIEW, a session recorded a low
 `is_winston_confidence`, the tracker dropped it below threshold, and nothing was
 queryable afterwards. The evidence survived in the frames and in the reviewer's
@@ -334,7 +334,7 @@ constraints:
 2. **Species comes from a reviewer, never from a model.** Apple Vision's animal
    request knows exactly two labels, Dog and Cat, so it cannot recognise a
    raccoon, a deer or a skunk — it reports them as nothing, or as a
-   low-confidence Dog. DINOv2 answers only "how close to Winston is this", which
+   low-confidence Dog. DINOv2 answers only "how close to the animal is this", which
    is similarity, not identity. Nothing in the local stack can name a species,
    so `source` is constrained to `session`/`owner`/`backfill` and a model cannot
    be recorded as the author of one.
@@ -354,12 +354,12 @@ likely to be one raccoon than six, and nothing here can tell them apart.
 
 The labelling queue (`animals candidates`) is `animal_present = 1 AND
 winston_probability < threshold` minus anything already labelled. It is
-deliberately noisy: most of its 31 current rows are low-confidence *Winston*
+deliberately noisy: most of its 31 current rows are low-confidence *target-animal*
 (backlit, coat washed out), not other species. It surfaces candidates for a
 human to look at and never guesses a species from the row.
 
 **Alternatives rejected.** A `species` column on `observations`: an observation
-is the vision layer's answer to one question — is this Winston — and widening it
+is the vision layer's answer to one question — is this the enrolled animal? — and widening it
 would put two different claims in one row. Reusing `winston_probability` as a
 generic animal score: it is calibrated for one identity and a second meaning
 would silently corrupt every threshold that reads it. Auto-labelling from the

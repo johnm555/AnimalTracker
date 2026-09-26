@@ -1,6 +1,6 @@
 # Detection quality review (P4-04)
 
-The terminal dashboard and JSON endpoint measure Winston verification scores
+The terminal dashboard and JSON endpoint measure verification scores
 against explicit reviews. They do not change live tracking or correct past
 transitions. No production labels are created automatically.
 
@@ -10,7 +10,7 @@ Inspect the event frames alongside enrolled reference photos first. Use the
 observation ID from the detection result or `detect calibration` export:
 
 ```sh
-scripts/run.sh quality review 123 --label winston --reviewer john --notes "Visible head, ears and body match enrolled Winston references."
+scripts/run.sh quality review 123 --label winston --reviewer john --notes "Visible head, ears and body match enrolled references."
 scripts/run.sh quality report --hours 24
 scripts/run.sh quality report --hours 168 --json
 ```
@@ -50,7 +50,7 @@ The capture-time window is applied after choosing the newest verdict.
 
 A predicted positive means `winston_probability >= confidence_threshold`.
 This measures detector score decisions, not the tracker's subsequent travel
-checks or confirmation logic. Same-named Winston 5000 devices are reported
+checks or confirmation logic. Same-named devices are reported
 separately by stable Ring device ID.
 
 | Metric | Calculation |
@@ -65,6 +65,6 @@ from all four denominators. An empty denominator returns null, never 100%.
 Repeated reviews and superseded verdicts do not inflate the sample size.
 
 These metrics cannot measure motion events Ring never captured, expired frames
-without an observation, or Winston being off screen. Rates only describe the
+without an observation, or the animal being off screen. Rates only describe the
 explicitly reviewed sample; threshold changes reclassify the same stored scores
 and the response reports that threshold. No automatic tuning is performed.

@@ -82,7 +82,7 @@ tracker:
 notifications:
   backend: log            # log | pushover | apns | imessage
   cooldown_seconds: 300
-  high_priority_zones: []   # zones that alert through quiet hours
+  high_priority_zones: [front-door]   # alert immediately, even in quiet hours
   quiet_hours: {start: "23:00", end: "06:30"}
   pushover:
     user_key_env: PUSHOVER_USER_KEY
@@ -100,5 +100,5 @@ notifications:
     settle_seconds: 300
 
 stats:
-  inside_zones: []
-  ambiguous_zones: []
+  inside_zones: [kitchen, living-room]
+  ambiguous_zones: [front-door]

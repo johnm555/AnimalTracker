@@ -116,3 +116,15 @@ def test_train_export_uses_reviewer_labels_and_keeps_splits_apart(tmp_path):
     counts = train.export(ev, tmp_path / "out")
     assert counts == {"Testing/no_animal": 1, "Training/target": 1}
     assert (tmp_path / "out" / "Training" / "target" / "k1__f0.jpg").is_file()
+
+
+def test_example_configs_describe_one_consistent_property():
+    """The shipped templates are the docs' example property; they must validate together."""
+    cfg = Path(__file__).resolve().parents[1] / "config"
+    topo = Topology.from_yaml(cfg / "cameras.example.yaml")
+    settings = yaml.safe_load((cfg / "settings.example.yaml").read_text())
+    zones = set(topo.zones)
+    for listed in (settings["notifications"]["high_priority_zones"],
+                   settings["stats"]["inside_zones"], settings["stats"]["ambiguous_zones"]):
+        assert set(listed) <= zones
+    assert all(w.min_seconds == 0 for z in topo.zones.values() for w in z.neighbors.values())

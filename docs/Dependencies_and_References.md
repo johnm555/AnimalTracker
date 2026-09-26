@@ -14,7 +14,7 @@ ideas, don't depend on it. **Rejected**: looked at, not using, reason given.
 | Ring auth, history, recordings | **Dependency:** `python-ring-doorbell` (already). Add the `[listen]` extra for FCM push. |
 | Live/on-demand frames from Ring (WebRTC) | **Sidecar (optional, later):** `go2rtc` — it has native Ring support and a `/api/frame.jpeg` endpoint. Do **not** implement WebRTC/WHEP in Python. |
 | Continuous camera streaming | **Rejected** on principle — Ring cameras stop sending motion events while streaming and battery units drain (ring-mqtt maintainer's warning). Event-clip pipeline stays. |
-| Vision "is this Winston?" | **Build (done):** Claude with reference photos. LLM Vision is the closest prior art and validates the pattern. |
+| Vision "is this the enrolled animal?" | **Build (done):** Claude with reference photos. LLM Vision is the closest prior art and validates the pattern. |
 | Cheap similarity pre-filter | **Reference for later:** `open_clip` / DINOv2 embeddings vs reference set; not needed for v0. |
 | Zone/topology state machine | **Build (done).** Nothing on GitHub does camera-zone dog tracking; Frigate's zones are the closest concept but need continuous RTSP. |
 | APNs from Python | **Build (done, ~40 lines):** `httpx[http2]` + `PyJWT`. **Rejected:** PyAPNs2 (depends on abandoned `hyper`). Alternative if we go async: `aioapns`. |
@@ -78,7 +78,7 @@ specific pet across multiple home cameras. What exists:
 
 ### Dog re-identification research code — **Reference for later**
 - `eugeniodias5/BIFOR` (paper: background-invariant dog re-ID), `markoMedved/DogReID-1553` (video re-ID dataset), `ddyy-hash/dog-reid-…` (YOLOv8 + SAM + OSNet), `Grechka67/Biometric-Pet-Identification` (nose-print + face). All ≤ 2 ★, academic.
-- Use for: if the LLM's `visual_similarity` proves noisy, a metric-learning embedding fine-tuned on Winston vs. neighborhood dogs is the next step; these show the recipe (YOLO crop → embedding → cosine vs. gallery).
+- Use for: if the LLM's `visual_similarity` proves noisy, a metric-learning embedding fine-tuned on the animal vs. neighborhood dogs is the next step; these show the recipe (YOLO crop → embedding → cosine vs. gallery).
 
 ## 3. Vision-model pet identification
 
@@ -134,7 +134,7 @@ Nothing camera-based. Adjacent:
 
 - **agittins/bermuda** — https://github.com/agittins/bermuda — 2,037 ★, pushed 2026-09-15. BLE trilateration for room presence in HA.
 - **ESPresense/ESPresense** — 1,477 ★, pushed 2026-09-18. ESP32 BLE nodes for room-level presence.
-- Use for: a **complementary, non-visual signal**. A BLE tag on Winston's collar plus one ESP32 indoors would give a cheap, high-confidence "he is in the house" observation for the zone no camera covers well. It would enter the tracker as just another `Observation` (camera_id = `ble-indoor`), no design change. Park it in the backlog.
+- Use for: a **complementary, non-visual signal**. A BLE tag on the animal's collar plus one ESP32 indoors would give a cheap, high-confidence "it is in the house" observation for the zone no camera covers well. It would enter the tracker as just another `Observation` (camera_id = `ble-indoor`), no design change. Park it in the backlog.
 - **pytransitions/transitions** — 6,593 ★ — generic FSM. **Rejected**: our transitions are computed from topology + time, not a fixed graph; a library adds indirection without removing code.
 - **Frigate zones** — see §2; best conceptual cross-check.
 

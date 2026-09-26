@@ -1,6 +1,6 @@
 # AnimalTrackerWatch
 
-watchOS app + WidgetKit complication for WinstonTracker. Shows where Winston
+watchOS app + WidgetKit complication for Animal Tracker. Shows where your animal
 was last seen, today's moves, and 24 h stats; receives APNs alerts from the
 backend.
 
@@ -109,8 +109,8 @@ AppShortcutsProvider. It queries the configured backend, speaks the last confirm
 area and sighting age, and returns the same text to Shortcuts. Network failures
 explicitly identify saved sightings; unconfirmed moves are never spoken as confirmed
 locations. `AnimalTrackerCore/Formatting/AnimalTrackerCheckIn.swift` owns the tested wording.
-Say “Check on Winston with Winston” or create a personal Shortcut named
-“Where's Winston” using the Check on Winston action. On-device Siri discovery and
+Say the phrase defined in `CheckOnAnimalIntent.swift` (“Check on <name> with Animal Tracker”)
+or build a personal Shortcut from its action. On-device Siri discovery and
 invocation still need verification after installation; compilation alone is not proof.
 
 Cached Watch and complication state now decays conservatively to Last seen after

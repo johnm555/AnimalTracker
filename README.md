@@ -10,22 +10,20 @@ Max, it says so. It never guesses.
 
 ## How it works
 
-```
- Ring cameras ──motion clip──▶ Mac backend (Python)
-                                 │
-                                 ├─ frames ─▶ local models: Apple Vision animal gate
-                                 │            + DINOv2 similarity to your reference photos
-                                 │              │ confident            │ unsure
-                                 │              ▼                      ▼
-                                 │         Observation           review queue ◀── Claude / Codex
-                                 │         (camera, time, p)     session (your subscription)
-                                 │              │◀─────────────────────┘
-                                 │              ▼
-                                 ├─ state machine ◀── cameras.yaml: zones, neighbors, travel times
-                                 │   deterministic: seen / transitioning / last seen; rejects impossible moves
-                                 │              ▼  zone change
-                                 ├─ notifications ──▶ iMessage · Pushover · APNs ──▶ iPhone / ⌚
-                                 └─ SQLite + FastAPI ──▶ watch app, Siri, complication
+```mermaid
+flowchart LR
+    cams["Ring cameras"] -- "motion clip" --> frames["Frame extractor"]
+    frames --> gate["Apple Vision<br/>animal gate"]
+    gate --> dino["DINOv2 similarity<br/>vs reference photos"]
+    dino -- confident --> obs(["Observation<br/>camera · time · p"])
+    dino -- unsure --> queue["Review queue"]
+    queue -- "Claude / Codex session<br/>(your subscription)" --> obs
+    queue -. "verdicts become<br/>training data" .-> dino
+    obs --> sm["State machine<br/>zones · travel times"]
+    topo[("cameras.yaml")] --> sm
+    sm -- "zone change" --> notify["iMessage · Pushover · APNs"]
+    sm --> api["SQLite + API"]
+    api --> watch["Watch app · Siri · complication"]
 ```
 
 Two ideas do all the work:
@@ -36,10 +34,30 @@ Two ideas do all the work:
    never asked where the animal is.
 2. **A deterministic tracker turns observations into a location.** It knows your
    property's topology — which zones border which, and how long the walk takes.
-   A sighting at the front door two seconds after a confirmed one in the yard is
-   physically impossible, so it's rejected as a different animal. Repeated
+   Once you've measured minimum walking times, a sighting that would need an
+   impossibly fast trip is rejected as a different animal. Repeated
    sightings in one zone collapse into one stay; weak sightings need a second
    look before the location changes. Only confirmed zone changes notify.
+
+**Example property** — the one in `backend/config/cameras.example.yaml`, which
+`run.sh setup` replaces with yours. Edges are neighbors, labelled with a slow
+walk in seconds; bold is high-priority:
+
+```mermaid
+flowchart LR
+    living["living-room<br/><small>living-room-cam</small>"] ---|20 s| kitchen["kitchen<br/><small>kitchen-cam</small>"]
+    kitchen ---|30 s| deck["back-deck<br/><small>deck-cam</small>"]
+    deck ---|60 s| yard["yard<br/><small>yard-cam · garden-cam</small>"]
+    living ---|30 s| front["<b>front-door</b><br/><small>doorbell</small>"]
+    style front stroke-width:3px
+```
+
+Kitchen → yard with no deck sighting in between is accepted with a small
+confidence penalty: the deck camera probably just missed it. The template's
+minimum walking times are 0, so nothing is rejected as too fast until you
+measure them; once kitchen → back-deck is at least 8 s and back-deck → yard at
+least 10 s, a yard sighting 5 s after a kitchen one is rejected as a different
+animal, because the shortest path takes 18 s.
 
 Most events are decided on the Mac in about 80 ms with no network call. The
 rest wait for review by a Claude or Codex session on your existing
