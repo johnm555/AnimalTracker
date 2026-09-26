@@ -67,8 +67,8 @@ HOLDOUT = 0.30
 
 
 def open_db(settings) -> Database:
-    p = Path((settings.get("database") or {}).get("path", "./winston.db"))
-    return Database(p if p.is_absolute() else BACKEND / p)
+    from src.paths import db_path
+    return Database(db_path(settings))
 
 
 def is_holdout(event_id: str) -> bool:

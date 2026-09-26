@@ -42,6 +42,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable
 
+from . import paths
 from .api import AppContext, load_settings
 from .db import Database
 from .frame_extractor import FrameExtractor, FrameExtractorConfig
@@ -119,15 +120,11 @@ def detector_mode(settings: dict[str, Any]) -> str:
 
 
 def reference_dir(settings: dict[str, Any]) -> Path:
-    d = settings.get("detector") or {}
-    ref_dir = Path(d.get("reference_images_dir", "./reference_images"))
-    return ref_dir if ref_dir.is_absolute() else Path(__file__).resolve().parent.parent / ref_dir
+    return paths.reference_images_dir(settings)
 
 
 def staging_dirs(settings: dict[str, Any]) -> StagingDirs:
-    d = settings.get("detector") or {}
-    root = Path(d.get("staging_dir", "./staging"))
-    return StagingDirs(root if root.is_absolute() else Path(__file__).resolve().parent.parent / root)
+    return StagingDirs(paths.staging_dir(settings))
 
 
 def build_detector(settings: dict[str, Any], ctx: AppContext | None) -> WinstonDetector:
@@ -453,9 +450,7 @@ def build_poller(settings: dict[str, Any], ctx: AppContext, ring: Any | None = N
     """Wire a live poller into an existing AppContext (shared tracker + DB)."""
     ring_cfg = settings.get("ring") or {}
     ring = ring or RingClient.from_settings(ring_cfg)
-    download_dir = Path(ring_cfg.get("download_dir", "./ring_downloads"))
-    if not download_dir.is_absolute():
-        download_dir = Path(__file__).resolve().parent.parent / download_dir
+    download_dir = paths.resolve(ring_cfg.get("download_dir", "ring_downloads"))
     mode = detector_mode(settings)
     common: dict[str, Any] = dict(
         ring=ring, extractor=build_extractor(settings), sink=ctx.ingest, db=ctx.db,
@@ -513,10 +508,7 @@ def main(argv: list[str] | None = None) -> int:
             r.raise_for_status()
             return r.json()
 
-        db_path = Path(settings.get("database", {}).get("path", "./winston.db"))
-        if not db_path.is_absolute():
-            db_path = Path(__file__).resolve().parent.parent / db_path
-        db = Database(db_path)
+        db = Database(paths.db_path(settings))
     else:
         ctx = AppContext.build(settings)
         sink = ctx.ingest

@@ -62,9 +62,12 @@ def load_truth(db_path: Path) -> dict[str, dict]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--db", default="winston.db")
-    ap.add_argument("--archive", default="staging/archive")
-    ap.add_argument("--references", default="reference_images")
+    from src.api import load_settings
+    from src.paths import db_path, reference_images_dir, staging_dir
+    settings = load_settings()
+    ap.add_argument("--db", default=db_path(settings))
+    ap.add_argument("--archive", default=str(staging_dir(settings) / "archive"))
+    ap.add_argument("--references", default=str(reference_images_dir(settings)))
     ap.add_argument("--json", help="write per-event scores here")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--no-gate", action="store_true", help="score full frames, no crop")
@@ -74,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     if not truth:
         sys.exit(f"no verdicts found in {args.db}")
     det = LocalDetector(LocalSettings(enabled=True), reference_dir=Path(args.references),
-                        cache_path=Path("staging/gallery.pt"))
+                        cache_path=staging_dir(settings) / "gallery.pt")
     if not det.load():
         sys.exit(f"local detector unavailable: {det._load_error}")
     gate = None if args.no_gate else DogGate(GateSettings())

@@ -35,7 +35,8 @@ sys.path.insert(0, str(BACKEND))
 from src.ring_client import RingClient, RingSettings  # noqa: E402
 
 SETTINGS_ENDPOINT = "/devices/v1/devices/{0}/settings"
-BACKUP_DIR = BACKEND / "ring_settings_backup"  # gitignored
+from src.paths import data_dir, env_path, settings_path  # noqa: E402
+BACKUP_DIR = data_dir() / "ring_settings_backup"
 
 # Ring app "Motion Frequency" is `motion_settings.motion_snooze_profile`: the
 # escalating post-event snooze in minutes. Verified live 2026-09-20: Frequent
@@ -47,7 +48,7 @@ FREQUENCY_PROFILES = {"frequent": [0, 0, 0], "regular": [1, 5, 15], "light": [5,
 
 
 def _load_env() -> None:
-    env = ROOT / ".env"
+    env = env_path() if env_path().is_file() else ROOT / ".env"
     if not env.is_file():
         return
     for line in env.read_text().splitlines():
@@ -59,8 +60,7 @@ def _load_env() -> None:
 
 def _client() -> RingClient:
     _load_env()
-    cfg = yaml.safe_load((BACKEND / "config/settings.yaml").read_text())["ring"]
-    os.chdir(BACKEND)  # token_cache / download_dir are relative to backend/
+    cfg = yaml.safe_load(settings_path().read_text())["ring"]
     client = RingClient(RingSettings.from_dict(cfg))
 
     def no_otp(prompt: str) -> str:

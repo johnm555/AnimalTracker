@@ -58,8 +58,8 @@ def main(argv: list[str] | None = None) -> int:
               + f"\n  disk free  {u['disk_free_gb']} GB")
         return 2 if u["over_limit"] else 0
 
-    db_path = Path(settings.get("database", {}).get("path", "./winston.db"))
-    db = Database(db_path if db_path.is_absolute() else BACKEND / db_path)
+    from src.paths import db_path
+    db = Database(db_path(settings))
 
     def mark_expired(device_id: str, event_id: str, reason: str) -> None:
         db.mark_event_by_id(device_id, event_id, "skipped", None, reason)
