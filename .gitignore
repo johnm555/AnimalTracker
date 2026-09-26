@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Site-specific data lives in ~/Library/Application Support/AnimalTracker/
+# These are remnants or symlinks if someone still has them in-tree:
+backend/winston.db
+backend/winston.db-wal
+backend/winston.db-shm
+backend/winston.db.*
+backend/*.db
+backend/*.db-wal
+backend/*.db-shm
+backend/*.db.bak*
+backend/tracker.db*
+backend/ring_token.cache
+backend/ring_downloads/
+backend/staging/
+backend/evalset/
+backend/ring_settings_backup/
+backend/reference_images/*
+!backend/reference_images/.gitkeep
+backend/secrets/
+
+# Site-specific configs (examples are tracked; real ones live in data dir)
+backend/config/settings.yaml
+backend/config/cameras.yaml
+backend/config/ring_locations.json
+backend/config/ring_cameras.json
+
+# Secrets
+.env
+
+# macOS / Xcode
+.DS_Store
+ios/**/xcuserdata/
+ios/**/DerivedData/
+ios/**/build/
+
+# Swift
+ios/**/.build/
+ios/**/.swiftpm/
+ios/**/*.xcodeproj/xcuserdata/
+
+# Stray FUSE/editor artifacts
+.fuse_hidden*
+backend/staging/gallery.pt

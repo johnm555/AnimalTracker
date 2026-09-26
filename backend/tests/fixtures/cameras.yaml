@@ -1,0 +1,41 @@
+# Camera topology for Winston's territory.
+#
+# Each zone lists the Ring cameras that cover it and the zones it borders.
+# Neighbor windows give the plausible walking time (in seconds) for a Great
+# Dane to move between two zones. Observations that imply a faster move than
+# min_seconds are rejected as implausible; slower than max_seconds is accepted
+# with reduced confidence (we probably just missed him in between).
+#
+# Adjacency is treated as symmetric: declaring backyard -> house is enough,
+# but you may declare both directions if the timings differ.
+#
+# Camera IDs must match the names of your Ring devices exactly (case-insensitive,
+# spaces are normalized to hyphens: "Back Door" -> "back-door").
+
+zones:
+  house:
+    cameras: [kitchen-door, back-door]
+    description: "Inside the house"
+  backyard:
+    cameras: [backyard]
+    description: "Fenced backyard"
+    neighbors:
+      house: {min_seconds: 3, max_seconds: 45}
+      side-yard: {min_seconds: 5, max_seconds: 60}
+  side-yard:
+    cameras: [side-yard]
+    description: "Side yard between backyard and driveway"
+    neighbors:
+      backyard: {min_seconds: 5, max_seconds: 60}
+      driveway: {min_seconds: 8, max_seconds: 90}
+  driveway:
+    cameras: [driveway]
+    description: "Driveway (street-adjacent)"
+    neighbors:
+      side-yard: {min_seconds: 8, max_seconds: 90}
+      front: {min_seconds: 5, max_seconds: 30}
+  front:
+    cameras: [front-door]
+    description: "Front yard / front door"
+    neighbors:
+      driveway: {min_seconds: 5, max_seconds: 30}

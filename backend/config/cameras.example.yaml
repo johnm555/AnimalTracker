@@ -1,0 +1,31 @@
+# Animal Tracker — camera topology template.
+# Copy to ~/Library/Application Support/AnimalTracker/config/cameras.yaml
+# and define your property's zones, cameras, and travel windows.
+#
+# Each zone has:
+#   cameras: list of camera IDs that cover this zone
+#   neighbors: which zones are adjacent and how long travel takes
+#     min_seconds: fastest plausible travel time (0 = unknown)
+#     max_seconds: slowest plausible travel time
+#
+# Camera IDs are normalized: lowercase, spaces → hyphens.
+
+zones:
+  house:
+    cameras: [indoor-cam]
+    description: Main indoor area
+    neighbors:
+      backyard: {min_seconds: 5, max_seconds: 30}
+      front: {min_seconds: 10, max_seconds: 60}
+
+  backyard:
+    cameras: [backyard-cam]
+    description: Back yard
+    neighbors:
+      house: {min_seconds: 5, max_seconds: 30}
+
+  front:
+    cameras: [doorbell]
+    description: Front door / driveway area
+    neighbors:
+      house: {min_seconds: 10, max_seconds: 60}

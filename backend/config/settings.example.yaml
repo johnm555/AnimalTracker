@@ -1,0 +1,104 @@
+# Animal Tracker — settings template.
+# Copy to ~/Library/Application Support/AnimalTracker/config/settings.yaml
+# and fill in your site-specific values.
+#
+# Secrets (Ring credentials, API keys, push tokens) live in environment
+# variables / .env, never in this file.
+
+database:
+  path: ./tracker.db
+
+api:
+  host: 0.0.0.0
+  port: 8420
+
+ring:
+  token_cache: ./ring_token.cache
+  # Your Ring camera device IDs (find them with scripts/run.sh ring-login).
+  device_ids: []
+  poll_interval_seconds: 60
+  event_kinds: [motion, ding]
+  ring_classifications: []
+  download_dir: ./ring_downloads
+
+pipeline:
+  enabled: true
+  startup_lookback_minutes: 30
+  max_attempts: 3
+
+storage:
+  archive_retention_hours: 72
+  pending_retention_hours: 24
+  thumbnail_retention_days: 7
+  max_storage_gb: 10
+  thumbnail_width_px: 320
+
+frames:
+  frames_per_event: 4
+  max_dimension_px: 1024
+  jpeg_quality: 85
+
+detector:
+  mode: session
+  staging_dir: ./staging
+  gate:
+    enabled: true
+    backend: apple_vision
+    min_confidence: 0.30
+    absent_confidence: 0.15
+    skip_on_absent: false
+  local:
+    enabled: true
+    model: dinov2_vits14
+    device: auto
+    accept_threshold: 0.37
+    reject_threshold: 0.10
+    require_gate_box: true
+    crop_padding: 0.15
+    max_frames: 4
+  pipeline:
+    enabled: true
+    accept_threshold: 0.37
+    rescue_threshold: 0.31
+    not_winston_threshold: null
+    require_gate_box: true
+  model: claude-opus-5
+  max_tokens: 4096
+  reference_images_dir: ./reference_images
+  max_reference_images: 6
+  weights:
+    vision_confidence: 0.60
+    visual_similarity: 0.25
+    size_compatible: 0.15
+  temporal_weight: 0.5
+
+tracker:
+  confidence_threshold: 0.70
+  strong_threshold: 0.90
+  debounce_seconds: 20
+  confirmation_window_seconds: 90
+  seen_timeout_seconds: 120
+
+notifications:
+  backend: log            # log | pushover | apns | imessage
+  cooldown_seconds: 300
+  high_priority_zones: []   # zones that alert through quiet hours
+  quiet_hours: {start: "23:00", end: "06:30"}
+  pushover:
+    user_key_env: PUSHOVER_USER_KEY
+    api_token_env: PUSHOVER_API_TOKEN
+  apns:
+    team_id_env: APNS_TEAM_ID
+    key_id_env: APNS_KEY_ID
+    private_key_path_env: APNS_PRIVATE_KEY_PATH
+    bundle_id: com.example.animaltracker
+    use_sandbox: true
+    device_tokens_env: APNS_DEVICE_TOKENS
+  imessage:
+    recipient_env: IMESSAGE_RECIPIENT
+    recipient: ""           # phone number or Apple ID email
+    settle_seconds: 300
+
+stats:
+  inside_zones: []
+  ambiguous_zones: []
