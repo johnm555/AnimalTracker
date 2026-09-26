@@ -11,6 +11,10 @@ answer is `unknown` — never a guess.
 
 ## Before you start
 
+0. **The plan is the issue tracker:** https://github.com/johnm555/AnimalTracker/issues
+   (labels `area:*`). Pick an issue, say so on it, and open a PR that closes it.
+   New ideas become issues, not notes in the repo.
+
 1. Check which branch you're on: `main` is the public framework; `internal`
    (if it exists) is the private deployment with site-specific history.
 2. Read `CLAUDE.md` for the full layout, commands, and design decisions.
