@@ -1,10 +1,18 @@
+import os
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# Hermetic: never read or write the real site data dir
+# (~/Library/Application Support/AnimalTracker). Set before any src import.
+os.environ["ANIMAL_TRACKER_DATA"] = tempfile.mkdtemp(prefix="animaltracker-test-")
+os.environ.pop("ANIMAL_TRACKER_SETTINGS", None)
+os.environ.pop("ANIMAL_TRACKER_CAMERAS", None)
 
 from src.observation import Observation  # noqa: E402
 from src.state_machine import Topology  # noqa: E402
