@@ -244,7 +244,7 @@ def test_imessage_sender_high_priority_sends_immediately(monkeypatch):
     sender.send(payload, decision)
     assert len(calls) == 1
     assert "osascript" in calls[0][0]
-    assert "Max at the exit door" in calls[0][2]
+    assert "Max at the exit door" in calls[0][-1]
 
     # Silent decisions should not send
     calls.clear()
@@ -287,9 +287,9 @@ def test_imessage_sender_buffers_normal_transitions(monkeypatch):
     import time as _time
     _time.sleep(0.3)
     assert len(calls) == 1  # journey summary sent
-    assert "settled" in calls[0][2].lower()
-    assert "deck cam" in calls[0][2]
-    assert "living room" in calls[0][2]
+    assert "settled" in calls[0][-1].lower()
+    assert "deck cam" in calls[0][-1]
+    assert "living room" in calls[0][-1]
 
 
 def test_imessage_sender_on_off(monkeypatch):

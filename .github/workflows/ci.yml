@@ -116,3 +116,13 @@ jobs:
         run: |
           xcodebuild build -project AnimalTrackerWatch.xcodeproj -scheme AnimalTrackerWatch \
             -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet
+
+  mac-app:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Desktop setup model tests
+        working-directory: macos/AnimalTracker
+        run: swift test
+      - name: Package native Mac app (local signature)
+        run: scripts/build-mac-app.sh "$RUNNER_TEMP/AnimalTracker-build"

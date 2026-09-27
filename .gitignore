@@ -57,3 +57,8 @@ backend/staging/gallery.pt
 .coverage
 .coverage.*
 htmlcov/
+
+# Native Mac app build products
+macos/**/.build/
+macos/**/.swiftpm/
+dist/

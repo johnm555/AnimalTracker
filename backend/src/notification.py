@@ -464,17 +464,18 @@ class IMessageSender:
     def _send_text(self, text: str) -> None:
         import subprocess
 
-        # Escape quotes and backslashes for AppleScript string.
-        escaped = text.replace("\\", "\\\\").replace('"', '\\"')
+        # Keep all user-controlled values out of AppleScript source.
         script = (
-            'tell application "Messages"\n'
-            f'  set targetService to 1st account whose service type = iMessage\n'
-            f'  set targetBuddy to participant "{self.recipient}" of targetService\n'
-            f'  send "{escaped}" to targetBuddy\n'
-            'end tell'
+            'on run argv\n'
+            '  tell application "Messages"\n'
+            '    set targetService to 1st account whose service type = iMessage\n'
+            '    set targetBuddy to participant (item 1 of argv) of targetService\n'
+            '    send (item 2 of argv) to targetBuddy\n'
+            '  end tell\n'
+            'end run'
         )
         result = subprocess.run(
-            ["osascript", "-e", script],
+            ["osascript", "-e", script, "--", self.recipient, text],
             capture_output=True, text=True, timeout=15,
         )
         if result.returncode != 0:

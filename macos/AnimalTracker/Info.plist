@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>com.animaltracker.desktop</string>
+<key>CFBundleName</key><string>Animal Tracker</string>
+<key>CFBundleDisplayName</key><string>Animal Tracker</string>
+<key>CFBundleExecutable</key><string>AnimalTracker</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>LSMinimumSystemVersion</key><string>14.0</string>
+<key>NSHighResolutionCapable</key><true/>
+<key>NSAppleEventsUsageDescription</key><string>Animal Tracker uses Messages to send transition alerts and setup tests to the recipient you choose.</string>
+<key>NSLocalNetworkUsageDescription</key><string>Animal Tracker connects your phone and Apple Watch to this Mac’s tracking service when you enable local network access.</string>
+</dict></plist>
