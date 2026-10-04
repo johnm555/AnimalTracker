@@ -11,3 +11,24 @@
 .winston-portrait figcaption em{color:var(--ink)}
 .art-note{font-size:11px;color:var(--muted)}
 @media(max-width:680px){.winston-portrait{margin-top:20px}.winston-portrait figcaption{padding:22px}.winston-portrait h2{font-size:25px}}
+
+
+/* Native Mac app introduction. The window is a labelled, noninteractive illustration. */
+.mac-section{display:grid;grid-template-columns:.85fr 1.15fr;gap:36px;align-items:center;border-bottom:1px solid var(--line)}
+.mac-intro{font-size:18px;color:var(--muted)}
+.mac-benefits{list-style:none;padding:0;margin:28px 0;font-size:14px;color:var(--muted)}
+.mac-benefits li{padding:0 0 17px 18px;position:relative}.mac-benefits li:before{content:"";width:5px;height:5px;border-radius:50%;background:var(--orange);position:absolute;top:10px;left:0}
+.mac-benefits strong{display:block;color:var(--ink);font-size:15px;margin-bottom:3px}
+.mac-preview{margin:0;min-width:0}.mac-window{overflow:hidden;border:1px solid #c9d1c4;border-radius:12px;background:#fafbf7;box-shadow:0 18px 48px #233b2e16}
+.mac-titlebar{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--line);font-size:11px;font-weight:600;background:#eef0e9}
+.traffic-lights{display:flex;gap:5px}.traffic-lights i{width:8px;height:8px;border-radius:50%;background:#de887d}.traffic-lights i:nth-child(2){background:#d8b968}.traffic-lights i:nth-child(3){background:#87ac80}
+.preview-tag{color:var(--muted);font-size:10px;font-weight:400}.mac-window-body{display:grid;grid-template-columns:170px 1fr;min-height:365px}
+.mac-sidebar{display:flex;flex-direction:column;gap:4px;background:#edf0e7;padding:19px 10px;font-size:10px;color:var(--muted)}
+.mac-sidebar>strong{font-size:13px;color:var(--ink);margin:0 8px 17px}.mac-sidebar>span{padding:6px 8px;border-radius:5px;line-height:1.5}.mac-sidebar b{float:right;color:var(--green)}.mac-sidebar .selected{background:#d6e2d2;color:var(--green);font-weight:700}
+.mac-pane{padding:24px 19px;min-width:0}.mac-kicker{font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:var(--green)}.mac-pane h3{font-size:23px;margin:12px 0}.mac-pane>p{font-size:11px;color:var(--muted);margin-bottom:18px}
+.mac-form{background:white;border:1px solid #e1e5db;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:11px}.mac-form>strong{font-size:12px;margin-bottom:7px}.mock-label{font-weight:500;font-size:10px}.mock-field{display:block;background:#fafbf8;border:1px solid #d7ddd1;border-radius:4px;padding:5px 6px;color:#697466;font-size:9px}.mac-form p{font-size:9px;line-height:1.6;color:var(--muted);margin:5px 0 0}.mock-continue{display:block;width:max-content;margin:15px 0 0 auto;background:var(--green);color:white;padding:6px 11px;border-radius:5px;font-size:10px}
+.mac-preview figcaption{font-size:11px;line-height:1.6;color:var(--muted);margin-top:15px}.mac-provider-note{grid-column:1/-1;background:#e8eddf;padding:18px 22px;border-radius:8px;color:var(--muted);font-size:13px}.mac-provider-note strong{color:var(--ink)}
+.setup .distribution-note{font-size:12px;color:var(--muted);margin-top:22px;padding-left:14px;border-left:2px solid var(--orange)}
+.launch-note{grid-column:1/-1;border:1px solid var(--line);border-radius:8px;padding:20px 25px}.launch-note h3{font-size:18px;margin:0 0 12px}.launch-note p{margin:8px 0;font-size:14px}.launch-note kbd{font-family:inherit;font-size:12px;padding:2px 5px;border:1px solid var(--line);border-radius:3px;margin-right:3px;background:white}.launch-note code{font-size:13px;background:#e8eddf;padding:3px 6px;border-radius:3px}
+@media(max-width:1000px){.mac-section{grid-template-columns:1fr;gap:28px}.mac-preview{max-width:680px;width:100%;margin:auto}.mac-window-body{grid-template-columns:180px 1fr}.mac-pane{padding:24px}.mac-form{padding:18px}.mac-copy{max-width:680px}}
+@media(max-width:680px){.mac-window-body{grid-template-columns:1fr;min-height:auto}.mac-sidebar{display:none}.mac-pane{padding:22px}.mac-section{gap:24px}.mac-provider-note{padding:18px}.launch-note{padding:20px}.mac-kicker{font-size:10px}.mac-pane>p,.mac-form{font-size:12px}.mock-label,.mock-field,.mac-form p,.mock-continue{font-size:11px}.mac-preview figcaption{font-size:11px}.mac-intro{font-size:17px}}
