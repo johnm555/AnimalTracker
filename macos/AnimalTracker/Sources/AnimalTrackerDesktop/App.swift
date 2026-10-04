@@ -60,6 +60,7 @@ struct ContentView: View {
     @State private var consent = false
     @State private var code = ""
     @State private var confirmMessage = false
+    @AppStorage("resumeTracking") private var resumeTracking = false
     var body: some View {
         NavigationSplitView {
             VStack(alignment: .leading, spacing: 22) {
@@ -88,7 +89,7 @@ struct ContentView: View {
                         if m.busy { ProgressView().controlSize(.small) } else { Image(systemName: m.error ? "exclamationmark.circle" : "checkmark.circle").foregroundStyle(m.error ? Color.orange : forest) }
                         Text(m.message).font(.callout).textSelection(.enabled)
                         Spacer()
-                        if m.busy { Button("Cancel") { m.bridge.cancel() } }
+                        if m.busy { Button("Cancel") { m.cancelOperation() } }
                     }.padding(18).background(.quaternary.opacity(0.4))
                 }
             }.background(Color(nsColor: .windowBackgroundColor))
@@ -98,7 +99,7 @@ struct ContentView: View {
                 Label("Verify your account", systemImage: "lock.shield").font(.title2.bold())
                 Text("Enter the code from your trusted device or message. It is used only for this sign-in.").foregroundStyle(.secondary)
                 SecureField("Verification code", text: $code).textFieldStyle(.roundedBorder).onSubmit { submitCode() }
-                HStack { Button("Cancel sign-in") { m.bridge.cancel(); m.otp = false; code = "" }; Spacer(); Button("Verify") { submitCode() }.buttonStyle(.borderedProminent).disabled(code.isEmpty) }
+                HStack { Button("Cancel sign-in") { m.cancelOperation(); m.otp = false; code = "" }; Spacer(); Button("Verify") { submitCode() }.buttonStyle(.borderedProminent).disabled(code.isEmpty) }
             }.padding(30).frame(width: 410)
         }
         .alert("Send a setup test?", isPresented: $confirmMessage) {
@@ -127,14 +128,17 @@ struct ContentView: View {
             lead("Install the engine once. Your data stays separate from the app, so app updates won’t replace it.")
             card("Local vision, on your Mac", icon: "cpu") {
                 Text("The app installs Python libraries into a private environment. Downloads can take several minutes and need internet access and several GB of free space. First tracking may also download model weights.")
-                field("Python 3.11 or newer", text: $m.pythonPath)
-                HStack {
-                    Button("Choose Python…") { let panel = NSOpenPanel(); panel.canChooseDirectories = false; if panel.runModal() == .OK, let u = panel.url { m.pythonPath = u.path } }
-                    Button("Get Python 3.12") { m.open("https://www.python.org/downloads/macos/") }
-                    Spacer()
-                    Button(m.engineReady ? "Repair engine" : "Prepare engine") { m.prepare() }.buttonStyle(.borderedProminent)
+                Button(m.engineReady ? "Repair engine automatically" : "Download & prepare engine") { m.prepareAutomatically() }.buttonStyle(.borderedProminent)
+                Text("Downloads Python 3.12 from Astral’s official python-build-standalone release, verifies a pinned SHA-256 checksum, then installs the project’s Python libraries. No separate Python installation is required.").font(.caption).foregroundStyle(.secondary)
+                DisclosureGroup("Advanced: use an existing Python installation") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        field("Python 3.11 or newer", text: $m.pythonPath)
+                        HStack {
+                            Button("Choose Python…") { let panel = NSOpenPanel(); panel.canChooseDirectories = false; if panel.runModal() == .OK, let u = panel.url { m.pythonPath = u.path } }
+                            Button("Prepare with this Python") { m.prepare() }
+                        }
+                    }.padding(.top, 10)
                 }
-                Text("Python is a prerequisite for this preview. Choose the installed python3 executable, not the installer file.").font(.caption).foregroundStyle(.secondary)
             }
             Text(m.engineReady ? "✓ Tracking engine is installed." : "The engine has not been prepared yet.").foregroundStyle(m.engineReady ? forest : .secondary)
             next(.animal, enabled: m.engineReady)
@@ -248,8 +252,12 @@ struct ContentView: View {
                 HStack {
                     Button("Refresh") { m.refresh() }.disabled(!m.engineReady)
                     Button("Start tracking", systemImage: "play.fill") { m.start() }.buttonStyle(.borderedProminent).disabled(!m.engineReady || !m.configured || m.ownedRunning || m.externalRunning)
-                    Button("Stop tracking", systemImage: "stop.fill") { m.stop() }.disabled(!m.ownedRunning)
+                    Button("Stop tracking", systemImage: "stop.fill") { m.stop() }.disabled(!m.ownedRunning && !m.recoveryPending)
                 }
+                Toggle("Open Animal Tracker when I sign in", isOn: Binding(get: { m.loginEnabled }, set: { m.setLogin($0) }))
+                Toggle("Start tracking when the app opens", isOn: $resumeTracking)
+                Toggle("Recover automatically if the engine exits unexpectedly", isOn: $m.recoverEngine)
+                Text("Recovery retries up to three times. Stop and Quit remain explicit stops. These controls never manage an external service.").font(.caption).foregroundStyle(.secondary)
                 Text(m.externalRunning && !m.ownedRunning ? "An existing service is running. This app will not stop or replace it." : "Keep this app open while tracking. Closing the window is fine; quitting stops the engine started here.").foregroundStyle(.secondary)
                 Text("If a camera cannot see your animal, its absence is not evidence of a new location. Check the Watch or API for timestamped observations.").font(.caption).foregroundStyle(.secondary)
             }

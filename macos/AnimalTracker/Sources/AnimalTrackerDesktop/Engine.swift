@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import ServiceManagement
 
 /// One JSON-lines transaction. Credentials travel through a pipe, never argv.
 final class Bridge {
@@ -50,6 +51,14 @@ final class AppModel: ObservableObject {
     @Published var checks: [[String: Any]] = []
     @Published var engineReady = false
     @Published var ownedRunning = false
+    @Published var recoveryPending = false
+    @Published var loginEnabled = SMAppService.mainApp.status == .enabled
+    @Published var recoverEngine = UserDefaults.standard.object(forKey: "recoverEngine") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(recoverEngine, forKey: "recoverEngine") }
+    }
+    private var requestedStop = false
+    private var recovery = RecoveryPolicy()
+    private var restartWork: DispatchWorkItem?
     @Published var pythonPath = "/opt/homebrew/bin/python3.12"
     @Published var name = ""
     @Published var animalDescription = ""
@@ -61,6 +70,7 @@ final class AppModel: ObservableObject {
     @Published var replace = false
     @Published var previewed = false
     let bridge = Bridge()
+    private let bootstrap = PythonBootstrap()
     private var server: Process?
     private var timer: Timer?
     var root: URL { Bundle.main.resourceURL!.appendingPathComponent("Engine") }
@@ -80,7 +90,11 @@ final class AppModel: ObservableObject {
     init() {
         engineReady = FileManager.default.fileExists(atPath: data.appendingPathComponent("desktop-runtime/.ready").path)
         for p in ["/opt/homebrew/bin/python3.12", "/usr/local/bin/python3.12", "/opt/homebrew/bin/python3", "/usr/local/bin/python3"] where FileManager.default.isExecutableFile(atPath: p) { pythonPath = p; break }
-        if engineReady { refresh() }
+        if engineReady {
+            if UserDefaults.standard.bool(forKey: "resumeTracking") {
+                start()
+            } else { refresh() }
+        }
         timer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in
             guard let self, self.engineReady, !self.busy else { return }; self.refresh(silent: true)
         }
@@ -106,8 +120,28 @@ final class AppModel: ObservableObject {
             if !gotResult && !self.error { self.error = true; self.message = "Operation stopped. You can retry." }
         })
     }
+    func prepareAutomatically() {
+        guard !busy else { return }
+        guard !ownedRunning && !externalRunning else { error = true; message = "Stop tracking before repairing the engine."; return }
+        busy = true; error = false; message = "Downloading and verifying Python (about 25 MB)…"
+        bootstrap.prepare(in: data) { [weak self] result in
+            guard let self else { return }
+            self.busy = false
+            switch result {
+            case .success(let executable): self.pythonPath = executable.path; self.prepare()
+            case .failure(let problem):
+                self.error = true
+                self.message = problem is CancellationError ? "Preparation cancelled." : problem.localizedDescription
+            }
+        }
+    }
+    func cancelOperation() { bootstrap.cancel(); bridge.cancel() }
     func prepare() {
-        guard !busy else { return }; busy = true; error = false
+        guard !busy else { return }
+        guard !ownedRunning && !externalRunning else { error = true; message = "Stop tracking before repairing the engine."; return }
+        engineReady = false
+        try? FileManager.default.removeItem(at: data.appendingPathComponent("desktop-runtime/.ready"))
+        busy = true; error = false
         bridge.run(python: URL(fileURLWithPath: pythonPath), script: root.appendingPathComponent("scripts/prepare_runtime.py"), environment: environment, request: nil, event: { [weak self] event in
             guard let self else { return }
             if event["event"] as? String == "result" {
@@ -144,8 +178,23 @@ final class AppModel: ObservableObject {
             if !preview { self?.state["configured"] = true; self?.page = .dashboard }
         }
     }
-    func start() {
+    func setLogin(_ enabled: Bool) {
+        do {
+            if enabled { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+            loginEnabled = SMAppService.mainApp.status == .enabled
+            message = SMAppService.mainApp.status == .requiresApproval
+                ? "Allow Animal Tracker in System Settings → General → Login Items."
+                : (loginEnabled ? "Animal Tracker will open when you sign in." : "Open at login is off.")
+        } catch { self.error = true; message = "Could not change login settings. Check System Settings → General → Login Items." }
+    }
+    func start(automatic: Bool = false) {
         guard !ownedRunning && !busy else { return }
+        if automatic && !recoverEngine { recoveryPending = false; return }
+        if !automatic { recovery.reset() }
+        recoveryPending = false
+        requestedStop = false
+        restartWork?.cancel()
         // Check the port immediately before launching; never terminate an external service.
         run(["action": "status"]) { [weak self] result in
             guard let self else { return }
@@ -156,8 +205,23 @@ final class AppModel: ObservableObject {
             p.environment = self.environment; p.standardInput = input
             p.standardOutput = FileHandle.nullDevice; p.standardError = FileHandle.nullDevice
             p.terminationHandler = { [weak self] process in DispatchQueue.main.async {
-                self?.ownedRunning = false
-                self?.message = process.terminationStatus == 0 || process.terminationReason == .uncaughtSignal ? "Tracking stopped." : "Engine exited. Run Check setup to diagnose configuration and credentials."
+                guard let self, self.server === process else { return }
+                self.ownedRunning = false
+                if self.requestedStop { self.message = "Tracking stopped."; return }
+                if let delay = self.recovery.nextDelay(enabled: self.recoverEngine, requestedStop: self.requestedStop) {
+                    self.recoveryPending = true
+                    self.message = "Engine exited unexpectedly. Recovery attempt \(self.recovery.attempts) of 3 in \(Int(delay)) seconds…"
+                    let work = DispatchWorkItem { [weak self] in
+                        guard let self, !self.requestedStop else { return }
+                        self.recoveryPending = false
+                        if self.busy { self.message = "Recovery paused during setup. Start tracking when setup is finished."; return }
+                        self.start(automatic: true)
+                    }
+                    self.restartWork = work
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+                } else {
+                    self.error = true; self.message = "Engine stopped. Automatic recovery is off or exhausted; run Check setup before retrying."
+                }
             } }
             do {
                 try p.run(); try input.fileHandleForWriting.write(contentsOf: Data("{\"action\":\"serve\"}\n".utf8)); try input.fileHandleForWriting.close()
@@ -165,8 +229,11 @@ final class AppModel: ObservableObject {
             } catch { self.error = true; self.message = "Could not start the tracking engine." }
         }
     }
-    func stop() { if server?.isRunning == true { server?.terminate() }; ownedRunning = false }
-    func shutdown() { bridge.cancel(); stop() }
+    func stop() {
+        requestedStop = true; recoveryPending = false; restartWork?.cancel(); recovery.reset()
+        if server?.isRunning == true { server?.terminate() } else { ownedRunning = false }
+    }
+    func shutdown() { cancelOperation(); stop() }
     func importPhotos() {
         let panel = NSOpenPanel(); panel.allowsMultipleSelection = true; panel.canChooseDirectories = false
         panel.allowedContentTypes = [.jpeg, .png, .webP]

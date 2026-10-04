@@ -107,8 +107,12 @@ class AppContext:
         tracker.history.clear()
         tracker.rejections.clear()
         if notifier is None:
-            policy = NotificationPolicy(PolicyConfig.from_settings(settings.get("notifications")))
-            notifier = NotificationService(policy, sender_from_settings(settings.get("notifications"), db), db)
+            animal_name = str((settings.get("animal") or {}).get("name") or "your animal")
+            policy_config = PolicyConfig.from_settings(settings.get("notifications"))
+            policy_config.animal_name = animal_name
+            policy = NotificationPolicy(policy_config)
+            notifier = NotificationService(policy, sender_from_settings(
+                settings.get("notifications"), db, animal_name=animal_name), db)
         return cls(settings, topology, db, tracker, notifier)
 
     # -- core ingest -------------------------------------------------------

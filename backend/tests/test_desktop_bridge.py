@@ -188,3 +188,51 @@ def test_no_message_without_confirmation(site, monkeypatch):
     with pytest.raises(ValueError):
         bridge.handle({"action": "imessage_test", "recipient": "test@example.invalid"})
     send.assert_not_called()
+
+
+def test_saved_profile_name_reaches_alerts_and_journey_summary(
+    site, request_data, monkeypatch
+):
+    from datetime import datetime, timezone
+    from src.api import AppContext
+    from src.notification import NotificationDecision, NORMAL
+    from src.state_machine import TransitionEvent
+
+    bridge.configure(request_data)
+    settings = yaml.safe_load((site / "config/settings.yaml").read_text())
+    settings["notifications"] = {
+        "backend": "imessage",
+        "imessage": {"recipient": "test@example.invalid"},
+    }
+    context = AppContext.build(settings=settings)
+    event = TransitionEvent(
+        id=1,
+        from_zone="kitchen",
+        to_zone="garden",
+        arrived_at=datetime.now(timezone.utc),
+        confidence=0.95,
+    )
+    try:
+        decision = context.notifier.policy.decide(event)
+        assert "Max" in decision.title
+        assert "Winston" not in decision.title
+        sender = context.notifier.sender
+        texts = []
+        monkeypatch.setattr(sender, "_send_text", texts.append)
+        sender._journey = [(event, NotificationDecision(NORMAL, "", ""))]
+        sender._flush_journey()
+        assert texts and "Max settled" in texts[0]
+        assert "Winston" not in texts[0]
+    finally:
+        context.db.close()
+
+
+def test_release_refuses_development_certificate_before_build(tmp_path):
+    import os
+    import subprocess
+    env = dict(os.environ, ANIMAL_TRACKER_SIGNING_IDENTITY="Apple Development: Example", ANIMAL_TRACKER_NOTARY_PROFILE="example")
+    destination = tmp_path / "release"
+    result = subprocess.run(["bash", str(ROOT / "scripts/release-mac-app.sh"), str(destination)], env=env, capture_output=True, text=True)
+    assert result.returncode != 0
+    assert "Developer ID Application" in result.stderr
+    assert not destination.exists()

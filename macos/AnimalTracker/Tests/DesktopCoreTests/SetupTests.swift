@@ -10,6 +10,18 @@ final class SetupTests: XCTestCase {
         XCTAssertEqual(pending.zone, "Kitchen")
         XCTAssertTrue(pending.title.contains("unconfirmed"))
     }
+    func testRecoveryIsBoundedAndRespectsExplicitStop() {
+        var policy = RecoveryPolicy()
+        XCTAssertNil(policy.nextDelay(enabled: true, requestedStop: true))
+        XCTAssertEqual(policy.attempts, 0)
+        XCTAssertNil(policy.nextDelay(enabled: false, requestedStop: false))
+        XCTAssertEqual(policy.nextDelay(enabled: true, requestedStop: false), 5)
+        XCTAssertEqual(policy.nextDelay(enabled: true, requestedStop: false), 10)
+        XCTAssertEqual(policy.nextDelay(enabled: true, requestedStop: false), 15)
+        XCTAssertNil(policy.nextDelay(enabled: true, requestedStop: false))
+        policy.reset()
+        XCTAssertEqual(policy.nextDelay(enabled: true, requestedStop: false), 5)
+    }
     func testOnlySelectedCamerasAndZeroMinimum() {
         var a = CameraChoice(id: "1", name: "Door"); a.selected = true; a.zone = "Kitchen"
         let b = CameraChoice(id: "2", name: "Other property")

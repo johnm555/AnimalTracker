@@ -52,3 +52,16 @@ public struct SightingSummary {
         self.zone = zone; self.timestamp = time
     }
 }
+
+
+/// Bounded recovery: avoid an endless crash loop or undoing an explicit stop.
+public struct RecoveryPolicy {
+    public private(set) var attempts = 0
+    public init() {}
+    public mutating func reset() { attempts = 0 }
+    public mutating func nextDelay(enabled: Bool, requestedStop: Bool) -> TimeInterval? {
+        guard enabled, !requestedStop, attempts < 3 else { return nil }
+        attempts += 1
+        return TimeInterval(attempts * 5)
+    }
+}

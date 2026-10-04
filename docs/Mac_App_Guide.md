@@ -8,9 +8,9 @@ the detector or deterministic tracker.
 
 ## Build and open
 
-Requires macOS 14+, Xcode command-line tools with Swift 5.9+, and Python 3.11+
-(Python 3.12 recommended for the runtime). Build on the architecture you intend
-to use; this script does not produce a universal binary.
+Building requires macOS 14+ and Xcode command-line tools with Swift 5.9+.
+Users do not need to install Python separately; first-run preparation downloads it.
+Build on the architecture you intend to use; this script does not produce a universal binary.
 
 ```sh
 scripts/build-mac-app.sh /tmp/AnimalTracker-build
@@ -20,8 +20,10 @@ open '/tmp/AnimalTracker-build/Animal Tracker.app'
 Move the app to your Applications folder. The build is locally ad-hoc signed;
 it is **not notarized or ready for frictionless distribution to other Macs**.
 A release needs a Developer ID signature, a notarization/stapling step, and a
-clean-Mac acceptance test. The preview downloads dependencies from PyPI during
-setup; it is not a self-contained offline runtime or a Mac App Store build.
+clean-Mac acceptance test.
+First-run setup downloads a pinned Python runtime from Astral’s official
+python-build-standalone GitHub release, then dependencies from PyPI; it is not
+an offline runtime or a Mac App Store build.
 
 The bundle contains an allowlisted copy of framework Python sources, dependency
 requirements, and example configs. It contains no site data. Build output goes
@@ -29,13 +31,18 @@ to ignored `dist/` by default; the script refuses to overwrite an existing app.
 
 ## First run
 
-1. **Tracking engine:** select an installed Python executable and click Prepare
-   engine. The app creates `desktop-runtime/` in the data directory and installs
+1. **Tracking engine:** click Download & prepare engine. The app downloads a
+   standalone Python 3.12.15 interpreter (release 20261003, about 25 MB), verifies
+   its architecture-specific SHA-256 digest, and unpacks it in the data directory.
+   An advanced option accepts an existing Python 3.11+ interpreter.
+   The app creates `desktop-runtime/` in the data directory and installs
    the requirements there. Internet, several GB of disk space, and several
    minutes may be needed. A failed installation can be retried. It never runs
    `sudo` or installs into system Python.
 2. **Your animal:** enter the name and identifying appearance. This version
    tracks one enrolled animal; it does not provide independent multi-pet tracks.
+   Backend alert titles and Messages journey summaries use this saved name;
+   legacy payload identifiers remain unchanged for client compatibility.
 3. **Ring:** enter account credentials, then the verification code when prompted.
    A saved session can be reused. The password is discarded after submission;
    the existing Ring client saves its refresh token. Select cameras at one
@@ -79,8 +86,11 @@ controls a process started by this app. Saved sessions are labelled as saved,
 not as proof of a currently healthy connection.
 
 Keep the app running for its owned engine to run. Closing the window leaves the
-app running; quitting asks before stopping its engine. Automatic launch at login
-and crash recovery are not implemented. A stalled provider sign-in can be
+app running; quitting asks before stopping its engine.
+Open-at-login uses macOS Login Items and requires an explicit toggle. A separate
+option resumes tracking when the app opens. Engine recovery retries at 5, 10, and
+15 seconds, then stops; an explicit Stop or Quit cancels recovery. External services
+are never managed by these controls. A stalled provider sign-in can be
 cancelled and retried. Diagnostics reuse `doctor` and include remediation text.
 The app does not automatically change model thresholds, schedule AI reviews,
 or guarantee identification accuracy. Uncertain frames still need the existing
@@ -113,3 +123,29 @@ recovery, Apple trusted-device authentication, denied and approved Messages
 permissions, an actual received alert, engine startup with local model downloads,
 and Watch access on a second device. Those checks need account/device access
 and are not substituted by mocked tests.
+
+
+## Notarized release
+
+The release script deliberately requires a **Developer ID Application** certificate;
+an Apple Development certificate alone cannot be used for this distribution step.
+Store notarization credentials with Apple's `notarytool store-credentials` in the
+Keychain, then supply the profile name (never a password in a shell argument).
+
+```sh
+export ANIMAL_TRACKER_SIGNING_IDENTITY='Developer ID Application: Your Name (TEAMID)'
+export ANIMAL_TRACKER_NOTARY_PROFILE='animaltracker-release'
+scripts/release-mac-app.sh /tmp/AnimalTracker-release
+```
+
+The script builds, signs with hardened runtime, submits to Apple, staples and
+validates the ticket, checks Gatekeeper, and writes a zip plus checksum. It does
+not publish a GitHub release. Run the real-account/device acceptance checks above
+before distributing. Notarization still requires the owner's certificate and
+credentials; the script's presence is not evidence that Apple approved a build.
+
+The standalone Python archives are pinned in `PythonBootstrap.swift` for Apple
+silicon and Intel. Update both URLs/digests together after verifying the official
+release metadata; never replace checksum verification with a floating latest URL.
+Automatic downloads and dependency setup require internet access. The Python
+runtime's included license notices remain with the installed runtime.
