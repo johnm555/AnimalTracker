@@ -1,5 +1,9 @@
 # Animal Tracker
 
+**Native Mac app preview:** guided setup for Ring, cameras, reference photos,
+Messages and optional experimental Find My account setup. See the
+[Mac app guide](docs/Mac_App_Guide.md) for building, requirements and limitations.
+
 **[Project website](https://johnm555.github.io/AnimalTracker/)** · [Setup guide](docs/Setup_Guide.md) · [Open issues](https://github.com/johnm555/AnimalTracker/issues)
 
 Where is your animal right now? Animal Tracker answers that from your Ring

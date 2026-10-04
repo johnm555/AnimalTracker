@@ -76,6 +76,7 @@ class PolicyConfig:
     min_confidence: float = 0.0
     """Transitions below this confidence are logged but not pushed."""
     zone_labels: dict[str, str] = field(default_factory=dict)
+    animal_name: str = "Winston"  # Legacy default; AppContext supplies the enrolled name.
 
     @classmethod
     def from_settings(cls, d: dict[str, Any] | None) -> "PolicyConfig":
@@ -141,11 +142,11 @@ class NotificationPolicy:
     def _describe(self, event: TransitionEvent) -> tuple[str, str]:
         to = self.label(event.to_zone)
         if event.is_initial_sighting:
-            return "Winston spotted", f"Winston is in the {to}."
+            return f"{self.config.animal_name} spotted", f"{self.config.animal_name} is in the {to}."
         frm = self.label(event.from_zone or "")
         if event.to_zone in self.config.high_priority_zones:
-            return f"Winston is in the {to}", f"Moved from the {frm} to the {to}. Street-adjacent."
-        return f"Winston → {to}", f"Moved from the {frm} to the {to}."
+            return f"{self.config.animal_name} is in the {to}", f"Moved from the {frm} to the {to}. Street-adjacent."
+        return f"{self.config.animal_name} → {to}", f"Moved from the {frm} to the {to}."
 
     def label(self, zone: str) -> str:
         return self.config.zone_labels.get(zone, zone.replace("-", " "))
@@ -358,9 +359,10 @@ class IMessageSender:
 
     name = "imessage"
 
-    def __init__(self, recipient: str, *, settle_seconds: float = 300.0,
+    def __init__(self, recipient: str, *, animal_name: str = "Winston", settle_seconds: float = 300.0,
                  notifier: "NotificationService | None" = None) -> None:
         self.recipient = recipient
+        self.animal_name = animal_name
         if not recipient:
             raise ValueError("iMessage recipient (phone number or Apple ID email) is required")
         self.settle_seconds = settle_seconds
@@ -374,11 +376,11 @@ class IMessageSender:
         self._cmd_thread: threading.Thread | None = None
 
     @classmethod
-    def from_settings(cls, d: dict[str, Any]) -> "IMessageSender":
+    def from_settings(cls, d: dict[str, Any], *, animal_name: str = "Winston") -> "IMessageSender":
         env_var = d.get("recipient_env", "IMESSAGE_RECIPIENT")
         recipient = os.environ.get(env_var, d.get("recipient", ""))
         settle = float(d.get("settle_seconds", 300))
-        return cls(recipient, settle_seconds=settle)
+        return cls(recipient, animal_name=animal_name, settle_seconds=settle)
 
     def set_notifier(self, notifier: "NotificationService") -> None:
         """Called after NotificationService is constructed (circular ref)."""
@@ -448,11 +450,11 @@ class IMessageSender:
         if len(zones) <= 2:
             # Simple A → B move.
             route = " → ".join(_zone_label(z) for z in zones if z)
-            text = f"🐾 Winston settled: {route}"
+            text = f"🐾 {self.animal_name} settled: {route}"
         else:
             # Multi-step journey.
             route = " → ".join(_zone_label(z) for z in zones if z)
-            text = f"🐾 Winston settled in the {_zone_label(settled_zone)}\nRoute: {route}"
+            text = f"🐾 {self.animal_name} settled in the {_zone_label(settled_zone)}\nRoute: {route}"
 
         text += f"\n({confidence:.0%} confidence)"
 
@@ -464,17 +466,18 @@ class IMessageSender:
     def _send_text(self, text: str) -> None:
         import subprocess
 
-        # Escape quotes and backslashes for AppleScript string.
-        escaped = text.replace("\\", "\\\\").replace('"', '\\"')
+        # Keep all user-controlled values out of AppleScript source.
         script = (
-            'tell application "Messages"\n'
-            f'  set targetService to 1st account whose service type = iMessage\n'
-            f'  set targetBuddy to participant "{self.recipient}" of targetService\n'
-            f'  send "{escaped}" to targetBuddy\n'
-            'end tell'
+            'on run argv\n'
+            '  tell application "Messages"\n'
+            '    set targetService to 1st account whose service type = iMessage\n'
+            '    set targetBuddy to participant (item 1 of argv) of targetService\n'
+            '    send (item 2 of argv) to targetBuddy\n'
+            '  end tell\n'
+            'end run'
         )
         result = subprocess.run(
-            ["osascript", "-e", script],
+            ["osascript", "-e", script, "--", self.recipient, text],
             capture_output=True, text=True, timeout=15,
         )
         if result.returncode != 0:
@@ -581,7 +584,8 @@ def _zone_label(zone: str | None) -> str:
     return (zone or "unknown").replace("-", " ")
 
 
-def sender_from_settings(d: dict[str, Any] | None, db: Database | None = None) -> Sender:
+def sender_from_settings(d: dict[str, Any] | None, db: Database | None = None, *,
+                         animal_name: str = "Winston") -> Sender:
     d = d or {}
     backend = d.get("backend", "log")
     if backend == "pushover":
@@ -591,7 +595,7 @@ def sender_from_settings(d: dict[str, Any] | None, db: Database | None = None) -
     if backend == "apns":
         return APNsSender.from_settings(d.get("apns") or {}, db)
     if backend == "imessage":
-        return IMessageSender.from_settings(d.get("imessage") or {})
+        return IMessageSender.from_settings(d.get("imessage") or {}, animal_name=animal_name)
     if backend != "log":
         raise ValueError(f"unknown notification backend '{backend}' (log | pushover | apns | imessage)")
     return LogSender()
