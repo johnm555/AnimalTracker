@@ -16,4 +16,4 @@ pyobjc-framework-Vision>=12.0   # local animal gate (Apple Vision, Neural Engine
 pyobjc-framework-Quartz>=12.0   # CGImage decoding for the gate
 torch>=2.2                      # DINOv2 local identity pre-filter (P4-11)
 torchvision>=0.29.0
-findmy>=0.10                    # AirTag location via Find My network (P4-22)
+findmy>=0.10.2                    # AirTag location via Find My network (P4-22)
